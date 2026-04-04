@@ -531,6 +531,82 @@
       margin-top: 1px;
     }
 
+    /* ========== How To Section ========== */
+    .how-to-section {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 32px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .how-to-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .steps-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .step-card {
+      flex: 1;
+      background: var(--color-light);
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .step-number {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-primary);
+      letter-spacing: 0.1em;
+      margin-bottom: 6px;
+    }
+
+    .step-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+    }
+
+    .step-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: 6px;
+    }
+
+    .step-desc {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      line-height: 1.6;
+    }
+
+    .step-arrow {
+      font-size: 20px;
+      color: var(--color-primary);
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 600px) {
+      .steps-container {
+        flex-direction: column;
+      }
+      .step-arrow {
+        display: none;
+      }
+      .step-card {
+        width: 100%;
+      }
+    }
+
     /* ========== Warning Banner ========== */
     .warning-banner {
       display: none;
@@ -575,6 +651,33 @@
     <div class="hero">
       <p class="hero-title">AI株分析プロンプトを<br>ワンクリックで生成</p>
       <p class="hero-desc">条件を選ぶだけで、Claudeにそのまま貼り付けられるプロンプトを自動生成します。</p>
+    </div>
+
+    <!-- How To Section -->
+    <div class="how-to-section">
+      <div class="how-to-title">📖 使い方</div>
+      <div class="steps-container">
+        <div class="step-card">
+          <div class="step-number">STEP 1</div>
+          <div class="step-icon">🔍</div>
+          <div class="step-title">銘柄を探す</div>
+          <div class="step-desc">投資スタイルや市場を選んで、気になる銘柄を見つけよう</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step-card">
+          <div class="step-number">STEP 2</div>
+          <div class="step-icon">📋</div>
+          <div class="step-title">プロンプトをコピー</div>
+          <div class="step-desc">生成されたプロンプトの「コピー」ボタンを押すだけ</div>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step-card">
+          <div class="step-number">STEP 3</div>
+          <div class="step-icon">🤖</div>
+          <div class="step-title">Claudeに貼り付ける</div>
+          <div class="step-desc">Claude.aiを開いて貼り付けるだけ。すぐに分析が始まる！</div>
+        </div>
+      </div>
     </div>
 
     <!-- Tab Navigation -->
