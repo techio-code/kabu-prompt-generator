@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>株分析プロンプトジェネレーター | Claude対応</title>
-  <meta name="description" content="銘柄名を入力するだけで、Claudeにそのまま貼り付けられる6種類の株分析プロンプトを自動生成。無料で使えます。">
+  <meta name="description" content="銘柄を探す・分析するAIプロンプトを自動生成。条件を選ぶだけでスクリーニングプロンプト3種・分析プロンプト6種を即生成。Claudeにそのまま貼り付けて使えます。">
   <meta property="og:title" content="株分析プロンプトジェネレーター">
-  <meta property="og:description" content="銘柄名を入れるだけでClaude用の株分析プロンプトを6種類生成">
+  <meta property="og:description" content="銘柄を探す・分析するAIプロンプトを自動生成。Claudeにそのまま貼り付けて使えます。">
   <meta property="og:image" content="https://techio-code.github.io/kabu-prompt-generator/ogp.png">
   <meta property="og:url" content="https://techio-code.github.io/kabu-prompt-generator/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="株分析プロンプトジェネレーター">
-  <meta name="twitter:description" content="銘柄名を入れるだけでClaude用の株分析プロンプトを6種類生成">
+  <meta name="twitter:description" content="銘柄を探す・分析するAIプロンプトを自動生成。Claudeにそのまま貼り付けて使えます。">
   <meta name="twitter:image" content="https://techio-code.github.io/kabu-prompt-generator/ogp.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -118,6 +118,55 @@
       margin: 0 auto;
     }
 
+    /* ========== Tab ========== */
+    .tab-container {
+      display: flex;
+      gap: 4px;
+      background: #E8E8F0;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: var(--space-xl);
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      font-size: 15px;
+      font-weight: 600;
+      color: #888888;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: var(--color-text-primary);
+    }
+
+    /* ========== Tab Panels ========== */
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     /* ========== Card ========== */
     .card {
       background: #ffffff;
@@ -155,6 +204,10 @@
       }
 
       .form-field-ticker {
+        grid-column: 1 / -1;
+      }
+
+      .form-field-full {
         grid-column: 1 / -1;
       }
     }
@@ -208,6 +261,47 @@
       background-position: right 14px center;
       padding-right: 36px;
       cursor: pointer;
+    }
+
+    /* ========== Radio Group ========== */
+    .radio-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-sm);
+    }
+
+    .radio-label {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      height: 44px;
+      padding: 0 var(--space-md);
+      border-radius: 8px;
+      border: 1.5px solid #D0D0D0;
+      font-size: 14px;
+      font-weight: 400;
+      color: var(--color-text-primary);
+      cursor: pointer;
+      transition: border-color 0.2s ease, background 0.2s ease;
+      background: #ffffff;
+    }
+
+    .radio-label:hover {
+      border-color: var(--color-primary);
+    }
+
+    .radio-label input[type="radio"] {
+      accent-color: var(--color-primary);
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+    }
+
+    .radio-label.checked {
+      border-color: var(--color-primary);
+      background: rgba(108, 99, 255, 0.06);
+      color: var(--color-primary);
+      font-weight: 600;
     }
 
     .form-actions {
@@ -283,11 +377,6 @@
       animation: fadeIn 0.3s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
     .output-header {
       display: flex;
       align-items: center;
@@ -316,6 +405,10 @@
     @media (min-width: 720px) {
       .prompt-grid {
         grid-template-columns: 1fr 1fr;
+      }
+
+      .prompt-grid.single-col {
+        grid-template-columns: 1fr;
       }
     }
 
@@ -389,6 +482,34 @@
       justify-content: flex-end;
     }
 
+    /* ========== Cross-sell Banner ========== */
+    .crosssell-banner {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: rgba(108, 99, 255, 0.06);
+      border-left: 3px solid var(--color-primary);
+      border-radius: 0 8px 8px 0;
+      padding: var(--space-md);
+      margin-top: var(--space-xl);
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      line-height: 1.7;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .crosssell-banner:hover {
+      background: rgba(108, 99, 255, 0.12);
+    }
+
+    .crosssell-banner a {
+      color: var(--color-primary);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+
     /* ========== Notice ========== */
     .notice {
       display: flex;
@@ -435,60 +556,193 @@
     <!-- Hero -->
     <div class="hero">
       <p class="hero-title">AI株分析プロンプトを<br>ワンクリックで生成</p>
-      <p class="hero-desc">銘柄名を入力するだけで、Claudeにそのまま貼り付けられる6種類の分析プロンプトを自動生成します。</p>
+      <p class="hero-desc">条件を選ぶだけで、Claudeにそのまま貼り付けられるプロンプトを自動生成します。</p>
     </div>
 
-    <!-- Input Form -->
-    <div class="card form-card">
-      <h2 class="form-card-title">銘柄情報を入力</h2>
-      <div class="form-grid">
-        <div class="form-field form-field-ticker">
-          <label class="form-label" for="tickerInput">銘柄名・ティッカー<span>例: トヨタ自動車 / 7203</span></label>
-          <input
-            type="text"
-            id="tickerInput"
-            class="input"
-            placeholder="例: トヨタ自動車 / 7203"
-            autocomplete="off"
-          >
-        </div>
-        <div class="form-field">
-          <label class="form-label" for="periodSelect">分析期間</label>
-          <select id="periodSelect" class="input">
-            <option value="短期（1週間〜1ヶ月）">短期（1週間〜1ヶ月）</option>
-            <option value="中期（1〜6ヶ月）">中期（1〜6ヶ月）</option>
-            <option value="長期（6ヶ月以上）">長期（6ヶ月以上）</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label" for="styleSelect">投資スタイル</label>
-          <select id="styleSelect" class="input">
-            <option value="デイトレード">デイトレード</option>
-            <option value="スイング">スイング</option>
-            <option value="長期投資">長期投資</option>
-          </select>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-primary" id="generateBtn" onclick="generatePrompts()">
-          プロンプトを生成する
-        </button>
-      </div>
+    <!-- Tab Navigation -->
+    <div class="tab-container" role="tablist">
+      <button
+        class="tab-btn active"
+        id="tab-search"
+        role="tab"
+        aria-selected="true"
+        aria-controls="panel-search"
+        onclick="switchTab('search')"
+      >
+        🔍 銘柄を探す
+      </button>
+      <button
+        class="tab-btn"
+        id="tab-analyze"
+        role="tab"
+        aria-selected="false"
+        aria-controls="panel-analyze"
+        onclick="switchTab('analyze')"
+      >
+        📊 銘柄を分析する
+      </button>
     </div>
 
-    <!-- Output Section -->
-    <div class="output-section" id="outputSection">
+    <!-- ============ Tab: 銘柄を探す ============ -->
+    <div class="tab-panel active" id="panel-search" role="tabpanel" aria-labelledby="tab-search">
 
-      <div class="output-header">
-        <h2 class="output-title">生成されたプロンプト（6種類）</h2>
-        <span class="output-meta" id="outputMeta"></span>
+      <!-- Form -->
+      <div class="card form-card">
+        <h2 class="form-card-title">スクリーニング条件を選択</h2>
+        <div class="form-grid">
+
+          <!-- 投資スタイル -->
+          <div class="form-field form-field-full">
+            <label class="form-label">投資スタイル</label>
+            <div class="radio-group" id="styleRadioGroup">
+              <label class="radio-label checked" id="radio-label-growth">
+                <input type="radio" name="investStyle" value="グロース投資（成長株）" checked onchange="updateRadioStyles('styleRadioGroup')">
+                グロース投資（成長株）
+              </label>
+              <label class="radio-label" id="radio-label-value">
+                <input type="radio" name="investStyle" value="バリュー投資（割安株）" onchange="updateRadioStyles('styleRadioGroup')">
+                バリュー投資（割安株）
+              </label>
+              <label class="radio-label" id="radio-label-dividend">
+                <input type="radio" name="investStyle" value="高配当投資" onchange="updateRadioStyles('styleRadioGroup')">
+                高配当投資
+              </label>
+              <label class="radio-label" id="radio-label-swing">
+                <input type="radio" name="investStyle" value="スイングトレード" onchange="updateRadioStyles('styleRadioGroup')">
+                スイングトレード
+              </label>
+            </div>
+          </div>
+
+          <!-- 注目セクター -->
+          <div class="form-field">
+            <label class="form-label" for="sectorSelect">注目セクター</label>
+            <select id="sectorSelect" class="input">
+              <option value="AI・半導体">AI・半導体</option>
+              <option value="EV・脱炭素・再エネ">EV・脱炭素・再エネ</option>
+              <option value="内需・生活消費">内需・生活消費</option>
+              <option value="金融・保険">金融・保険</option>
+              <option value="医療・ヘルスケア">医療・ヘルスケア</option>
+              <option value="輸出・製造業">輸出・製造業</option>
+              <option value="不動産・インフラ">不動産・インフラ</option>
+              <option value="セクター問わない">セクター問わない</option>
+            </select>
+          </div>
+
+          <!-- 時価総額 -->
+          <div class="form-field">
+            <label class="form-label" for="capSelect">時価総額</label>
+            <select id="capSelect" class="input">
+              <option value="大型株（時価総額1兆円以上）">大型株（時価総額1兆円以上）</option>
+              <option value="中型株（1,000億〜1兆円）">中型株（1,000億〜1兆円）</option>
+              <option value="小型株（1,000億円未満）">小型株（1,000億円未満）</option>
+              <option value="時価総額は問わない">問わない</option>
+            </select>
+          </div>
+
+          <!-- リスク許容度 -->
+          <div class="form-field">
+            <label class="form-label" for="riskSelect">リスク許容度</label>
+            <select id="riskSelect" class="input">
+              <option value="低（安定重視）">低（安定重視）</option>
+              <option value="中（バランス型）">中（バランス型）</option>
+              <option value="高（積極運用）">高（積極運用）</option>
+            </select>
+          </div>
+
+          <!-- 市場 -->
+          <div class="form-field">
+            <label class="form-label" for="marketSelect">市場</label>
+            <select id="marketSelect" class="input">
+              <option value="日本株（東証）">日本株（東証）</option>
+              <option value="米国株（NYSE・NASDAQ）">米国株（NYSE・NASDAQ）</option>
+              <option value="日本株・米国株の両方">両方</option>
+            </select>
+          </div>
+
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="screeningBtn" onclick="generateScreeningPrompts()">
+            スクリーニングプロンプトを生成する
+          </button>
+        </div>
       </div>
 
-      <div class="prompt-grid" id="promptGrid"></div>
+      <!-- Output Section: 銘柄を探す -->
+      <div class="output-section" id="screeningOutputSection">
 
-      <div class="notice">
-        <span class="notice-icon">&#9432;</span>
-        <span>上記のプロンプトをコピーして、Claudeのチャット画面に貼り付けてお使いください。より精度の高い分析には、最新の決算資料や株価データを合わせて添付することをおすすめします。</span>
+        <div class="output-header">
+          <h2 class="output-title">スクリーニングプロンプト（3種類）</h2>
+          <span class="output-meta" id="screeningOutputMeta"></span>
+        </div>
+
+        <div class="prompt-grid single-col" id="screeningPromptGrid"></div>
+
+        <div class="crosssell-banner" onclick="switchTab('analyze')" role="button" tabindex="0" aria-label="銘柄を分析するタブに切り替え">
+          <span>💡</span>
+          <span>気になる銘柄が見つかったら <a onclick="event.stopPropagation(); switchTab('analyze')">「銘柄を分析する」タブ</a> で詳しく分析してみよう</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ============ Tab: 銘柄を分析する ============ -->
+    <div class="tab-panel" id="panel-analyze" role="tabpanel" aria-labelledby="tab-analyze">
+
+      <!-- Input Form -->
+      <div class="card form-card">
+        <h2 class="form-card-title">銘柄情報を入力</h2>
+        <div class="form-grid">
+          <div class="form-field form-field-ticker">
+            <label class="form-label" for="tickerInput">銘柄名・ティッカー<span>例: トヨタ自動車 / 7203</span></label>
+            <input
+              type="text"
+              id="tickerInput"
+              class="input"
+              placeholder="例: トヨタ自動車 / 7203"
+              autocomplete="off"
+            >
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="periodSelect">分析期間</label>
+            <select id="periodSelect" class="input">
+              <option value="短期（1週間〜1ヶ月）">短期（1週間〜1ヶ月）</option>
+              <option value="中期（1〜6ヶ月）">中期（1〜6ヶ月）</option>
+              <option value="長期（6ヶ月以上）">長期（6ヶ月以上）</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label class="form-label" for="analyzeStyleSelect">投資スタイル</label>
+            <select id="analyzeStyleSelect" class="input">
+              <option value="デイトレード">デイトレード</option>
+              <option value="スイング">スイング</option>
+              <option value="長期投資">長期投資</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="generateBtn" onclick="generatePrompts()">
+            プロンプトを生成する
+          </button>
+        </div>
+      </div>
+
+      <!-- Output Section: 銘柄を分析する -->
+      <div class="output-section" id="outputSection">
+
+        <div class="output-header">
+          <h2 class="output-title">生成されたプロンプト（6種類）</h2>
+          <span class="output-meta" id="outputMeta"></span>
+        </div>
+
+        <div class="prompt-grid" id="promptGrid"></div>
+
+        <div class="notice">
+          <span class="notice-icon">&#9432;</span>
+          <span>上記のプロンプトをコピーして、Claudeのチャット画面に貼り付けてお使いください。より精度の高い分析には、最新の決算資料や株価データを合わせて添付することをおすすめします。</span>
+        </div>
+
       </div>
 
     </div>
@@ -501,6 +755,84 @@
   </footer>
 
   <script>
+    /* ========== Tab ========== */
+    function switchTab(tabId) {
+      // ボタン更新
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.remove('active');
+        btn.setAttribute('aria-selected', 'false');
+      });
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.getElementById('tab-' + tabId).setAttribute('aria-selected', 'true');
+
+      // パネル更新
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.remove('active');
+      });
+      document.getElementById('panel-' + tabId).classList.add('active');
+    }
+
+    /* ========== Radio style update ========== */
+    function updateRadioStyles(groupId) {
+      const group = document.getElementById(groupId);
+      group.querySelectorAll('.radio-label').forEach(label => {
+        const radio = label.querySelector('input[type="radio"]');
+        if (radio && radio.checked) {
+          label.classList.add('checked');
+        } else {
+          label.classList.remove('checked');
+        }
+      });
+    }
+
+    /* ========== 銘柄を探す ========== */
+    const SCREENING_TEMPLATES = [
+      {
+        title: "銘柄スクリーニング",
+        template: (style, sector, cap, risk, market) =>
+          `${market}の${sector}セクターから、${style}に適した${cap}の銘柄を5つスクリーニングしてください。選定基準（売上成長率・PER・RSI・出来高変化など）と各銘柄の選定理由を簡潔に添えてください。リスク許容度は${risk}です。`
+      },
+      {
+        title: "今週の注目銘柄",
+        template: (style, sector, cap, risk, market) =>
+          `${market}の${sector}セクターで今週注目すべき銘柄を3〜5つ挙げてください。直近のニュース・決算・テクニカル的な注目ポイントを含めて説明してください。${style}の視点で評価してください。`
+      },
+      {
+        title: "比較・ランキング",
+        template: (style, sector, cap, risk, market) =>
+          `${market}の${sector}セクターの${cap}銘柄を、${style}の観点で比較ランキングしてください。上位5銘柄について、強み・弱み・現在の投資妙味を表形式でまとめてください。`
+      }
+    ];
+
+    function generateScreeningPrompts() {
+      const style = document.querySelector('input[name="investStyle"]:checked').value;
+      const sector = document.getElementById('sectorSelect').value;
+      const cap = document.getElementById('capSelect').value;
+      const risk = document.getElementById('riskSelect').value;
+      const market = document.getElementById('marketSelect').value;
+
+      const outputSection = document.getElementById('screeningOutputSection');
+      const promptGrid = document.getElementById('screeningPromptGrid');
+      const outputMeta = document.getElementById('screeningOutputMeta');
+
+      outputMeta.textContent = `${style} / ${sector} / ${market}`;
+
+      promptGrid.innerHTML = '';
+
+      SCREENING_TEMPLATES.forEach((item, index) => {
+        const text = item.template(style, sector, cap, risk, market);
+        const card = createPromptCard(index + 1, item.title, text);
+        promptGrid.appendChild(card);
+      });
+
+      outputSection.classList.add('visible');
+
+      setTimeout(() => {
+        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 50);
+    }
+
+    /* ========== 銘柄を分析する ========== */
     const PROMPT_TEMPLATES = [
       {
         title: "市場分析プロンプト",
@@ -537,21 +869,21 @@
     const PLACEHOLDER = "【銘柄名を入力してください】";
 
     function generatePrompts() {
-      const rawTicker = document.getElementById("tickerInput").value.trim();
-      const period = document.getElementById("periodSelect").value;
-      const style = document.getElementById("styleSelect").value;
+      const rawTicker = document.getElementById('tickerInput').value.trim();
+      const period = document.getElementById('periodSelect').value;
+      const style = document.getElementById('analyzeStyleSelect').value;
 
       const ticker = rawTicker || PLACEHOLDER;
 
-      const outputSection = document.getElementById("outputSection");
-      const promptGrid = document.getElementById("promptGrid");
-      const outputMeta = document.getElementById("outputMeta");
+      const outputSection = document.getElementById('outputSection');
+      const promptGrid = document.getElementById('promptGrid');
+      const outputMeta = document.getElementById('outputMeta');
 
       outputMeta.textContent = rawTicker
         ? `銘柄: ${rawTicker} ／ ${period} ／ ${style}`
         : `${period} ／ ${style}`;
 
-      promptGrid.innerHTML = "";
+      promptGrid.innerHTML = '';
 
       PROMPT_TEMPLATES.forEach((item, index) => {
         const text = item.template(ticker, period, style);
@@ -559,44 +891,45 @@
         promptGrid.appendChild(card);
       });
 
-      outputSection.classList.add("visible");
+      outputSection.classList.add('visible');
 
       setTimeout(() => {
-        outputSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 50);
     }
 
+    /* ========== Shared: createPromptCard ========== */
     function createPromptCard(number, title, text) {
-      const card = document.createElement("div");
-      card.className = "prompt-card";
+      const card = document.createElement('div');
+      card.className = 'prompt-card';
 
-      const header = document.createElement("div");
-      header.className = "prompt-card-header";
+      const header = document.createElement('div');
+      header.className = 'prompt-card-header';
 
-      const numBadge = document.createElement("span");
-      numBadge.className = "prompt-number";
+      const numBadge = document.createElement('span');
+      numBadge.className = 'prompt-number';
       numBadge.textContent = number;
 
-      const titleEl = document.createElement("p");
-      titleEl.className = "prompt-card-title";
+      const titleEl = document.createElement('p');
+      titleEl.className = 'prompt-card-title';
       titleEl.textContent = title;
 
       header.appendChild(numBadge);
       header.appendChild(titleEl);
 
-      const textarea = document.createElement("textarea");
-      textarea.className = "prompt-textarea";
+      const textarea = document.createElement('textarea');
+      textarea.className = 'prompt-textarea';
       textarea.value = text;
       textarea.readOnly = true;
-      textarea.setAttribute("aria-label", title + "のプロンプトテキスト");
+      textarea.setAttribute('aria-label', title + 'のプロンプトテキスト');
 
-      const footer = document.createElement("div");
-      footer.className = "prompt-card-footer";
+      const footer = document.createElement('div');
+      footer.className = 'prompt-card-footer';
 
-      const copyBtn = document.createElement("button");
-      copyBtn.className = "btn-copy";
-      copyBtn.textContent = "コピー";
-      copyBtn.setAttribute("aria-label", title + "をコピー");
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'btn-copy';
+      copyBtn.textContent = 'コピー';
+      copyBtn.setAttribute('aria-label', title + 'をコピー');
       copyBtn.onclick = () => copyToClipboard(textarea.value, copyBtn);
 
       footer.appendChild(copyBtn);
@@ -608,48 +941,60 @@
       return card;
     }
 
+    /* ========== Shared: copyToClipboard ========== */
     function copyToClipboard(text, btn) {
       navigator.clipboard.writeText(text)
         .then(() => {
-          btn.textContent = "コピーしました ✓";
-          btn.classList.add("copied");
+          btn.textContent = 'コピーしました ✓';
+          btn.classList.add('copied');
           setTimeout(() => {
-            btn.textContent = "コピー";
-            btn.classList.remove("copied");
+            btn.textContent = 'コピー';
+            btn.classList.remove('copied');
           }, 2000);
         })
         .catch(() => {
-          // fallback for environments where clipboard API is unavailable
           try {
-            const el = document.createElement("textarea");
+            const el = document.createElement('textarea');
             el.value = text;
-            el.style.position = "fixed";
-            el.style.opacity = "0";
+            el.style.position = 'fixed';
+            el.style.opacity = '0';
             document.body.appendChild(el);
             el.focus();
             el.select();
-            document.execCommand("copy");
+            document.execCommand('copy');
             document.body.removeChild(el);
-            btn.textContent = "コピーしました ✓";
-            btn.classList.add("copied");
+            btn.textContent = 'コピーしました ✓';
+            btn.classList.add('copied');
             setTimeout(() => {
-              btn.textContent = "コピー";
-              btn.classList.remove("copied");
+              btn.textContent = 'コピー';
+              btn.classList.remove('copied');
             }, 2000);
           } catch (err) {
-            btn.textContent = "コピー失敗";
+            btn.textContent = 'コピー失敗';
             setTimeout(() => {
-              btn.textContent = "コピー";
+              btn.textContent = 'コピー';
             }, 2000);
           }
         });
     }
 
-    // Enterキーで生成できるようにする
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("tickerInput").addEventListener("keydown", (e) => {
-        if (e.key === "Enter") generatePrompts();
+    /* ========== Init ========== */
+    document.addEventListener('DOMContentLoaded', () => {
+      // Enterキーで分析プロンプト生成
+      document.getElementById('tickerInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') generatePrompts();
       });
+
+      // クロスセルバナーのキーボード操作
+      const crosssellBanner = document.querySelector('.crosssell-banner');
+      if (crosssellBanner) {
+        crosssellBanner.addEventListener('keydown', (e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            switchTab('analyze');
+          }
+        });
+      }
     });
   </script>
 
