@@ -531,6 +531,24 @@
       margin-top: 1px;
     }
 
+    /* ========== Warning Banner ========== */
+    .warning-banner {
+      display: none;
+      background: rgba(251, 163, 42, 0.12);
+      border: 1.5px solid #FBA32A;
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: #8a5a00;
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .warning-banner.show {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
     /* ========== Footer ========== */
     footer {
       text-align: center;
@@ -618,6 +636,7 @@
           <div class="form-field">
             <label class="form-label" for="sectorSelect">注目セクター</label>
             <select id="sectorSelect" class="input">
+              <option value="セクター問わない">セクター問わない</option>
               <option value="AI・半導体">AI・半導体</option>
               <option value="EV・脱炭素・再エネ">EV・脱炭素・再エネ</option>
               <option value="内需・生活消費">内需・生活消費</option>
@@ -625,7 +644,7 @@
               <option value="医療・ヘルスケア">医療・ヘルスケア</option>
               <option value="輸出・製造業">輸出・製造業</option>
               <option value="不動産・インフラ">不動産・インフラ</option>
-              <option value="セクター問わない">セクター問わない</option>
+              <option value="食品・外食">食品・外食</option>
             </select>
           </div>
 
@@ -660,6 +679,11 @@
             </select>
           </div>
 
+        </div>
+        <!-- 矛盾警告バナー -->
+        <div class="warning-banner" id="warningBanner" role="alert" aria-live="polite">
+          <span>⚠️</span>
+          <span id="warningBannerText"></span>
         </div>
         <div class="form-actions">
           <button class="btn btn-primary" id="screeningBtn" onclick="generateScreeningPrompts()">
@@ -978,6 +1002,77 @@
         });
     }
 
+    /* ========== 警告バナー判定 ========== */
+    const WARNING_PATTERNS = [
+      {
+        style: 'グロース投資（成長株）',
+        risk: '低（安定重視）',
+        message: 'グロース株はボラティリティが高く、リスク低とは相性が悪い傾向があります。安定重視なら「高配当投資」や「バリュー投資」も検討してみてください。'
+      },
+      {
+        style: 'スイングトレード',
+        risk: '低（安定重視）',
+        message: 'スイングトレードは短期売買のため価格変動リスクが高い手法です。安定重視の場合は長期投資スタイルが向いているかもしれません。'
+      }
+    ];
+
+    function checkWarning() {
+      const style = document.querySelector('input[name="investStyle"]:checked');
+      const risk = document.getElementById('riskSelect');
+      if (!style || !risk) return;
+
+      const styleVal = style.value;
+      const riskVal = risk.value;
+
+      const match = WARNING_PATTERNS.find(p => p.style === styleVal && p.risk === riskVal);
+      const banner = document.getElementById('warningBanner');
+      const bannerText = document.getElementById('warningBannerText');
+
+      if (match) {
+        bannerText.textContent = match.message;
+        banner.classList.add('show');
+      } else {
+        banner.classList.remove('show');
+      }
+    }
+
+    /* ========== セクター選択肢切り替え ========== */
+    const SECTOR_OPTIONS_JP = [
+      'セクター問わない',
+      'AI・半導体',
+      'EV・脱炭素・再エネ',
+      '内需・生活消費',
+      '金融・保険',
+      '医療・ヘルスケア',
+      '輸出・製造業',
+      '不動産・インフラ',
+      '食品・外食'
+    ];
+
+    const SECTOR_OPTIONS_US = [
+      'セクター問わない',
+      'テクノロジー（AI・クラウド・SaaS）',
+      '半導体・ハードウェア',
+      'ヘルスケア・バイオ',
+      '金融・フィンテック',
+      'エネルギー・脱炭素',
+      '一般消費財・EC',
+      '通信・メディア',
+      '公益・インフラ'
+    ];
+
+    function updateSectorOptions(market) {
+      const sectorSelect = document.getElementById('sectorSelect');
+      const options = market === '米国株（NYSE・NASDAQ）' ? SECTOR_OPTIONS_US : SECTOR_OPTIONS_JP;
+
+      const currentVal = sectorSelect.value;
+      sectorSelect.innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
+      // 同じ値があれば保持、なければ先頭に戻す
+      if (options.includes(currentVal)) {
+        sectorSelect.value = currentVal;
+      }
+    }
+
     /* ========== Init ========== */
     document.addEventListener('DOMContentLoaded', () => {
       // Enterキーで分析プロンプト生成
@@ -995,6 +1090,23 @@
           }
         });
       }
+
+      // 警告バナー: 投資スタイルのラジオ変更時
+      document.querySelectorAll('input[name="investStyle"]').forEach(radio => {
+        radio.addEventListener('change', checkWarning);
+      });
+
+      // 警告バナー: リスク許容度変更時
+      document.getElementById('riskSelect').addEventListener('change', checkWarning);
+
+      // 市場セレクト変更時にセクター選択肢を切り替え
+      document.getElementById('marketSelect').addEventListener('change', (e) => {
+        updateSectorOptions(e.target.value);
+      });
+
+      // ページ読み込み時に一度実行
+      updateSectorOptions(document.getElementById('marketSelect').value);
+      checkWarning();
     });
   </script>
 
