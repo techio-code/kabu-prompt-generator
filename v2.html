@@ -798,7 +798,7 @@
     <div class="hero">
       <p class="hero-title">証券コードを入れるだけで<br>財務データ＋分析プロンプト自動生成</p>
       <p class="hero-desc">PER・ROE・売上高・利益率など実際の財務データを自動取得。AIへの分析プロンプトにリアルデータを組み込んで出力します。</p>
-      <span class="hero-version-note">Alpha Vantage API（無料）を使用</span>
+      <span class="hero-version-note">日本株: APIキー不要 / 米国株: Alpha Vantage API（無料）</span>
     </div>
 
     <!-- How To -->
@@ -809,7 +809,7 @@
           <div class="step-num">STEP 1</div>
           <div class="step-icon">🔑</div>
           <div class="step-title">APIキーを設定</div>
-          <div class="step-desc">Alpha Vantageで無料取得。メアドのみ・20秒で発行</div>
+          <div class="step-desc">日本株はキー不要。米国株のみAlpha Vantage無料キーが必要</div>
         </div>
         <div class="step-arrow">→</div>
         <div class="step">
@@ -855,6 +855,7 @@
           <button class="btn btn-sm" id="apiKeyClearBtn" onclick="clearApiKey()" style="background: rgba(255,82,82,0.1); color: var(--color-error); border: 1.5px solid var(--color-error);">削除</button>
         </div>
         <p class="api-key-guide">
+          <strong>米国株（AAPL・NVDAなど）</strong>のみ必要です。日本株（7974.T など）はAPIキー不要。<br>
           無料APIキーの取得: <a href="https://www.alphavantage.co/support/#api-key" target="_blank" rel="noopener">alphavantage.co/support/#api-key</a> で約20秒で発行できます。<br>
           無料プランの上限: 1日25リクエスト / 1分5リクエスト。APIキーはこのブラウザにのみ保存されます（サーバー送信なし）。
         </p>
@@ -955,7 +956,7 @@
         <div class="kpi-grid" id="growthGrid"></div>
 
         <div class="data-source">
-          データ提供: <a href="https://www.alphavantage.co" target="_blank" rel="noopener">Alpha Vantage</a> &nbsp;|&nbsp;
+          データ提供: <span id="dataSourceLabel">Yahoo Finance / Alpha Vantage</span> &nbsp;|&nbsp;
           <span id="dataAsOf"></span>
         </div>
       </div>
@@ -1111,19 +1112,29 @@
     }
 
     /* ===========================
+       Japan Stock Detection
+    =========================== */
+    function isJapanStock(symbol) {
+      // .T 末尾 or 4〜5桁数字のみ（7974 / 7974.T / 72030 等）
+      return /\d{4,5}\.T$/i.test(symbol) || /^\d{4,5}$/.test(symbol);
+    }
+
+    function normalizeJapanSymbol(symbol) {
+      // 数字のみなら .T を付与
+      if (/^\d{4,5}$/.test(symbol)) return symbol + '.T';
+      return symbol.toUpperCase();
+    }
+
+    /* ===========================
        Fetch Stock Data
     =========================== */
     async function fetchStockData() {
       showError('');
-      const symbol = document.getElementById('symbolInput').value.trim().toUpperCase();
-      const apiKey = getApiKey();
+      const rawSymbol = document.getElementById('symbolInput').value.trim();
+      const symbol = rawSymbol.toUpperCase();
 
       if (!symbol) {
         showError('証券コードを入力してください。例: 7974.T（任天堂）/ AAPL（Apple）');
-        return;
-      }
-      if (!apiKey) {
-        showError('Alpha Vantage APIキーが未設定です。上の「APIキー」から設定してください。');
         return;
       }
 
@@ -1131,46 +1142,11 @@
       document.getElementById('dataPanel').classList.remove('visible');
 
       try {
-        // OVERVIEW（財務サマリー）を取得
-        const [overviewRes, quoteRes] = await Promise.all([
-          fetchWithTimeout(
-            `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
-            10000
-          ),
-          fetchWithTimeout(
-            `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
-            10000
-          )
-        ]);
-
-        if (!overviewRes.ok || !quoteRes.ok) {
-          throw new Error('APIリクエストに失敗しました。しばらく待ってから再試行してください。');
+        if (isJapanStock(symbol)) {
+          await fetchJapanStock(normalizeJapanSymbol(symbol));
+        } else {
+          await fetchUsStock(symbol);
         }
-
-        const overview = await overviewRes.json();
-        const quoteData = await quoteRes.json();
-
-        // レート制限 / 認証エラー検出
-        if (overview.Information || overview.Note) {
-          const msg = overview.Information || overview.Note;
-          if (msg.includes('demo')) {
-            throw new Error('デモAPIキーは使用できません。有効なAPIキーを設定してください。');
-          }
-          if (msg.includes('limit') || msg.includes('call frequency')) {
-            throw new Error('APIの呼び出し制限に達しました（無料プラン: 5回/分、25回/日）。しばらく待ってから再試行してください。');
-          }
-          throw new Error('APIエラー: ' + msg.slice(0, 100));
-        }
-
-        if (!overview.Symbol) {
-          throw new Error(`「${symbol}」が見つかりませんでした。証券コードを確認してください。\n例: 日本株 → 7974.T（.Tを付ける） / 米国株 → AAPL`);
-        }
-
-        const quote = quoteData['Global Quote'] || {};
-
-        setLoading(false);
-        renderStockData(overview, quote);
-
       } catch (err) {
         setLoading(false);
         if (err.name === 'AbortError') {
@@ -1181,11 +1157,185 @@
       }
     }
 
-    async function fetchWithTimeout(url, ms) {
+    /* ===========================
+       Japan Stock via Yahoo Finance
+    =========================== */
+    async function fetchJapanStock(symbol) {
+      setLoading(true, '日本株データを取得中（Yahoo Finance）...');
+
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1d&range=5d`;
+      const res = await fetchWithTimeout(url, 12000, { 'User-Agent': 'Mozilla/5.0' });
+
+      if (!res.ok) {
+        throw new Error(`データ取得に失敗しました（HTTP ${res.status}）。しばらく待ってから再試行してください。`);
+      }
+
+      const json = await res.json();
+      const result = json?.chart?.result?.[0];
+
+      if (!result) {
+        throw new Error(`「${symbol}」が見つかりませんでした。証券コードを確認してください。\n例: 7974.T（任天堂）/ 7203.T（トヨタ）`);
+      }
+
+      const meta = result.meta;
+      const prevClose = meta.chartPreviousClose || meta.previousClose;
+      const price = meta.regularMarketPrice;
+      const changeAmt = prevClose ? (price - prevClose) : null;
+      const changePct = prevClose ? ((price - prevClose) / prevClose * 100) : null;
+
+      // 統一データオブジェクトに変換
+      const data = {
+        source: 'yahoo',
+        symbol: meta.symbol,
+        name: meta.longName || meta.shortName || meta.symbol,
+        exchange: meta.fullExchangeName || meta.exchangeName || 'JPX',
+        sector: '—',
+        industry: '—',
+        currency: meta.currency || 'JPY',
+        price: price,
+        changeAmt: changeAmt,
+        changePct: changePct,
+        high52: meta.fiftyTwoWeekHigh,
+        low52: meta.fiftyTwoWeekLow,
+        volume: meta.regularMarketVolume,
+        dayHigh: meta.regularMarketDayHigh,
+        dayLow: meta.regularMarketDayLow,
+        // 詳細財務データはYahoo Finance v8では取得不可
+        per: null,
+        pbr: null,
+        eps: null,
+        peg: null,
+        dividendYield: null,
+        evEbitda: null,
+        marketCap: null,
+        roe: null,
+        roa: null,
+        operatingMargin: null,
+        profitMargin: null,
+        revenueTTM: null,
+        ebitda: null,
+        grossProfitTTM: null,
+        dilutedEPS: null,
+        revenueGrowth: null,
+        earningsGrowth: null,
+        beta: null,
+        analystTarget: null,
+        ma200: null,
+        ma50: null,
+        sharesOutstanding: null,
+      };
+
+      document.getElementById('dataSourceLabel').textContent = 'Yahoo Finance（日本株）';
+      setLoading(false);
+      renderStockData(data);
+    }
+
+    /* ===========================
+       US Stock via Alpha Vantage
+    =========================== */
+    async function fetchUsStock(symbol) {
+      const apiKey = getApiKey();
+      if (!apiKey) {
+        throw new Error('米国株の取得にはAlpha Vantage APIキーが必要です。上の「APIキー」から設定してください。\n日本株（7974.T など）はAPIキー不要です。');
+      }
+
+      setLoading(true, '米国株データを取得中（Alpha Vantage）...');
+
+      const [overviewRes, quoteRes] = await Promise.all([
+        fetchWithTimeout(
+          `https://www.alphavantage.co/query?function=OVERVIEW&symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
+          10000
+        ),
+        fetchWithTimeout(
+          `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${encodeURIComponent(symbol)}&apikey=${apiKey}`,
+          10000
+        )
+      ]);
+
+      if (!overviewRes.ok || !quoteRes.ok) {
+        throw new Error('APIリクエストに失敗しました。しばらく待ってから再試行してください。');
+      }
+
+      const overview = await overviewRes.json();
+      const quoteData = await quoteRes.json();
+
+      if (overview.Information || overview.Note) {
+        const msg = overview.Information || overview.Note;
+        if (msg.includes('demo')) {
+          throw new Error('デモAPIキーは使用できません。有効なAPIキーを設定してください。');
+        }
+        if (msg.includes('limit') || msg.includes('call frequency')) {
+          throw new Error('APIの呼び出し制限に達しました（無料プラン: 5回/分、25回/日）。しばらく待ってから再試行してください。');
+        }
+        throw new Error('APIエラー: ' + msg.slice(0, 100));
+      }
+
+      if (!overview.Symbol) {
+        throw new Error(`「${symbol}」が見つかりませんでした。証券コードを確認してください。\n例: 米国株 → AAPL / NVDA / TSLA`);
+      }
+
+      const quote = quoteData['Global Quote'] || {};
+      const price = quote['05. price'] ? Number(quote['05. price']) : null;
+      const prevClose = quote['08. previous close'] ? Number(quote['08. previous close']) : null;
+      const changeAmt = quote['09. change'] ? Number(quote['09. change']) : null;
+      const changePct = quote['10. change percent']
+        ? Number(quote['10. change percent'].replace('%', ''))
+        : null;
+
+      // 統一データオブジェクトに変換
+      const data = {
+        source: 'alphavantage',
+        symbol: overview.Symbol,
+        name: overview.Name || overview.Symbol,
+        exchange: overview.Exchange,
+        sector: overview.Sector,
+        industry: overview.Industry,
+        currency: overview.Currency || 'USD',
+        price: price,
+        changeAmt: changeAmt,
+        changePct: changePct,
+        high52: overview['52WeekHigh'] ? Number(overview['52WeekHigh']) : null,
+        low52: overview['52WeekLow'] ? Number(overview['52WeekLow']) : null,
+        volume: null,
+        dayHigh: null,
+        dayLow: null,
+        per: overview.PERatio,
+        pbr: overview.PriceToBookRatio,
+        eps: overview.EPS,
+        peg: overview.PEGRatio,
+        dividendYield: overview.DividendYield,
+        evEbitda: overview.EVToEBITDA,
+        marketCap: overview.MarketCapitalization,
+        roe: overview.ReturnOnEquityTTM,
+        roa: overview.ReturnOnAssetsTTM,
+        operatingMargin: overview.OperatingMarginTTM,
+        profitMargin: overview.ProfitMargin,
+        revenueTTM: overview.RevenueTTM,
+        ebitda: overview.EBITDA,
+        grossProfitTTM: overview.GrossProfitTTM,
+        dilutedEPS: overview.DilutedEPSTTM,
+        revenueGrowth: overview.QuarterlyRevenueGrowthYOY,
+        earningsGrowth: overview.QuarterlyEarningsGrowthYOY,
+        beta: overview.Beta,
+        analystTarget: overview.AnalystTargetPrice,
+        ma200: overview['200DayMovingAverage'],
+        ma50: overview['50DayMovingAverage'],
+        sharesOutstanding: overview.SharesOutstanding,
+      };
+
+      document.getElementById('dataSourceLabel').textContent = 'Alpha Vantage（米国株）';
+      setLoading(false);
+      renderStockData(data);
+    }
+
+    async function fetchWithTimeout(url, ms, extraHeaders) {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), ms);
       try {
-        const res = await fetch(url, { signal: controller.signal });
+        const res = await fetch(url, {
+          signal: controller.signal,
+          headers: extraHeaders || {}
+        });
         return res;
       } finally {
         clearTimeout(timer);
@@ -1194,42 +1344,54 @@
 
     /* ===========================
        Render Stock Data
+       data: 統一データオブジェクト
     =========================== */
-    function renderStockData(ov, quote) {
+    function renderStockData(data) {
+      const currency = data.currency || 'JPY';
+      const isJP = data.source === 'yahoo';
+
       // 企業名・シンボル
-      document.getElementById('stockName').textContent = ov.Name || ov.Symbol;
+      document.getElementById('stockName').textContent = data.name;
       document.getElementById('stockSymbolLabel').textContent =
-        [ov.Symbol, ov.Exchange, ov.Sector, ov.Industry].filter(Boolean).join(' · ');
+        [data.symbol, data.exchange, data.sector, data.industry]
+          .filter(v => v && v !== '—').join(' · ');
 
       // 現在株価
-      const price = quote['05. price'];
-      const changePercent = quote['10. change percent'];
-      const currency = ov.Currency || 'USD';
-
-      document.getElementById('stockPrice').textContent = price
-        ? formatCurrency(price, currency)
+      document.getElementById('stockPrice').textContent = data.price
+        ? formatCurrency(data.price, currency)
         : '—';
 
-      if (changePercent) {
-        const pct = changePercent.replace('%', '');
-        const num = parseFloat(pct);
+      if (data.changePct !== null && data.changePct !== undefined) {
+        const num = data.changePct;
         const el = document.getElementById('stockPriceChange');
-        el.textContent = (num >= 0 ? '▲ +' : '▼ ') + pct + '%（直近）';
+        el.textContent = (num >= 0 ? '▲ +' : '▼ ') + num.toFixed(2) + '%（前日比）';
         el.className = 'stock-price-change ' + (num >= 0 ? 'positive' : 'negative');
+      }
+
+      // 日本株の場合、詳細財務データがない旨を一度だけ通知
+      const existingNote = document.getElementById('jpStockNote');
+      if (existingNote) existingNote.remove();
+      if (isJP) {
+        const note = document.createElement('div');
+        note.id = 'jpStockNote';
+        note.className = 'alert alert-info visible';
+        note.style.marginTop = '16px';
+        note.innerHTML = '<span class="alert-icon">ℹ️</span><span>日本株はYahoo Financeから株価・52週高値/安値・出来高を取得しています。PER・ROE等の詳細財務指標は現在取得できないため「—」と表示されます。プロンプトには取得できたデータのみ組み込まれます。</span>';
+        document.querySelector('.stock-header').after(note);
       }
 
       // --- Valuation ---
       const valGrid = document.getElementById('valuationGrid');
       valGrid.innerHTML = '';
       [
-        { label: 'PER（株価収益率）', val: ov.PERatio, unit: 'ratio', sub: '15以下: 割安' },
-        { label: 'PBR（株価純資産）', val: ov.PriceToBookRatio, unit: 'ratio', sub: '1以下: 解散価値以下' },
-        { label: 'EPS', val: ov.EPS, unit: 'ratio', sub: '1株あたり利益' },
-        { label: 'PEG レシオ', val: ov.PEGRatio, unit: 'ratio', sub: '1以下: 割安' },
-        { label: '配当利回り', val: ov.DividendYield, unit: '%', sub: '' },
-        { label: 'EV/EBITDA', val: ov.EVToEBITDA, unit: 'ratio', sub: '低いほど割安' },
-        { label: '時価総額', val: ov.MarketCapitalization, unit: 'B', sub: currency },
-        { label: '52週高値', val: ov['52WeekHigh'], unit: 'ratio', sub: currency },
+        { label: 'PER（株価収益率）', val: data.per, unit: 'ratio', sub: '15以下: 割安' },
+        { label: 'PBR（株価純資産）', val: data.pbr, unit: 'ratio', sub: '1以下: 解散価値以下' },
+        { label: 'EPS', val: data.eps, unit: 'ratio', sub: '1株あたり利益' },
+        { label: 'PEG レシオ', val: data.peg, unit: 'ratio', sub: '1以下: 割安' },
+        { label: '配当利回り', val: data.dividendYield, unit: '%', sub: '' },
+        { label: 'EV/EBITDA', val: data.evEbitda, unit: 'ratio', sub: '低いほど割安' },
+        { label: '時価総額', val: data.marketCap, unit: 'B', sub: currency },
+        { label: '52週高値', val: data.high52, unit: 'ratio', sub: currency },
       ].forEach(item => {
         valGrid.appendChild(kpiCard(item.label, item.val, formatNumber(item.val, item.unit), item.sub));
       });
@@ -1238,14 +1400,14 @@
       const profGrid = document.getElementById('profitabilityGrid');
       profGrid.innerHTML = '';
       [
-        { label: 'ROE（自己資本利益率）', val: ov.ReturnOnEquityTTM, unit: '%', sub: '15%以上: 優良' },
-        { label: 'ROA（総資産利益率）', val: ov.ReturnOnAssetsTTM, unit: '%', sub: '5%以上: 良好' },
-        { label: '営業利益率', val: ov.OperatingMarginTTM, unit: '%', sub: '' },
-        { label: '純利益率', val: ov.ProfitMargin, unit: '%', sub: '' },
-        { label: '売上高（TTM）', val: ov.RevenueTTM, unit: 'B', sub: currency },
-        { label: 'EBITDA', val: ov.EBITDA, unit: 'B', sub: currency },
-        { label: '粗利益（TTM）', val: ov.GrossProfitTTM, unit: 'B', sub: currency },
-        { label: 'EPS（希薄化後）', val: ov.DilutedEPSTTM, unit: 'ratio', sub: '1株利益（TTM）' },
+        { label: 'ROE（自己資本利益率）', val: data.roe, unit: '%', sub: '15%以上: 優良' },
+        { label: 'ROA（総資産利益率）', val: data.roa, unit: '%', sub: '5%以上: 良好' },
+        { label: '営業利益率', val: data.operatingMargin, unit: '%', sub: '' },
+        { label: '純利益率', val: data.profitMargin, unit: '%', sub: '' },
+        { label: '売上高（TTM）', val: data.revenueTTM, unit: 'B', sub: currency },
+        { label: 'EBITDA', val: data.ebitda, unit: 'B', sub: currency },
+        { label: '粗利益（TTM）', val: data.grossProfitTTM, unit: 'B', sub: currency },
+        { label: 'EPS（希薄化後）', val: data.dilutedEPS, unit: 'ratio', sub: '1株利益（TTM）' },
       ].forEach(item => {
         profGrid.appendChild(kpiCard(item.label, item.val, formatNumber(item.val, item.unit), item.sub));
       });
@@ -1254,14 +1416,14 @@
       const growthGrid = document.getElementById('growthGrid');
       growthGrid.innerHTML = '';
       [
-        { label: '売上成長（QoQ）', val: ov.QuarterlyRevenueGrowthYOY, unit: '%', sub: '前年同期比' },
-        { label: '利益成長（QoQ）', val: ov.QuarterlyEarningsGrowthYOY, unit: '%', sub: '前年同期比' },
-        { label: 'ベータ値', val: ov.Beta, unit: 'ratio', sub: '1超: 市場より値動き大' },
-        { label: 'アナリスト目標株価', val: ov.AnalystTargetPrice, unit: 'ratio', sub: currency },
-        { label: '200日移動平均', val: ov['200DayMovingAverage'], unit: 'ratio', sub: '' },
-        { label: '50日移動平均', val: ov['50DayMovingAverage'], unit: 'ratio', sub: '' },
-        { label: '52週安値', val: ov['52WeekLow'], unit: 'ratio', sub: currency },
-        { label: '発行済株式数', val: ov.SharesOutstanding, unit: 'B', sub: '株' },
+        { label: '売上成長（QoQ）', val: data.revenueGrowth, unit: '%', sub: '前年同期比' },
+        { label: '利益成長（QoQ）', val: data.earningsGrowth, unit: '%', sub: '前年同期比' },
+        { label: 'ベータ値', val: data.beta, unit: 'ratio', sub: '1超: 市場より値動き大' },
+        { label: 'アナリスト目標株価', val: data.analystTarget, unit: 'ratio', sub: currency },
+        { label: '200日移動平均', val: data.ma200, unit: 'ratio', sub: '' },
+        { label: '50日移動平均', val: data.ma50, unit: 'ratio', sub: '' },
+        { label: '52週安値', val: data.low52, unit: 'ratio', sub: currency },
+        { label: '出来高', val: data.volume, unit: 'B', sub: '株' },
       ].forEach(item => {
         growthGrid.appendChild(kpiCard(item.label, item.val, formatNumber(item.val, item.unit), item.sub));
       });
@@ -1271,7 +1433,7 @@
         'データ取得: ' + new Date().toLocaleDateString('ja-JP', { year: 'numeric', month: 'long', day: 'numeric' });
 
       // プロンプト生成
-      generatePrompts(ov, quote);
+      generatePrompts(data);
 
       // データパネル表示
       document.getElementById('dataPanel').classList.add('visible');
@@ -1283,33 +1445,38 @@
     /* ===========================
        Prompt Generation
     =========================== */
-    function buildDataSummary(ov, quote) {
-      const currency = ov.Currency || 'USD';
-      const price = quote['05. price'];
+    function buildDataSummary(data) {
+      const currency = data.currency || 'JPY';
+      const fmtPct = (v) => (v !== null && v !== undefined && !isNaN(Number(v)))
+        ? (Number(v) * 100).toFixed(1) + '%' : '—';
+      const fmtRaw = (v) => (v !== null && v !== undefined && v !== '') ? v : '—';
+      const fmtB = (v) => (v !== null && v !== undefined && !isNaN(Number(v)))
+        ? formatNumber(v, 'B') + ' ' + currency : '—';
+
       const lines = [
         `【銘柄情報】`,
-        `企業名: ${ov.Name || ov.Symbol}`,
-        `シンボル: ${ov.Symbol} / 取引所: ${ov.Exchange || '—'} / セクター: ${ov.Sector || '—'}`,
-        `業種: ${ov.Industry || '—'}`,
+        `企業名: ${data.name}`,
+        `シンボル: ${data.symbol} / 取引所: ${data.exchange || '—'} / セクター: ${data.sector || '—'}`,
+        `業種: ${data.industry || '—'}`,
         '',
         `【現在株価】`,
-        `株価: ${price ? formatCurrency(price, currency) : '—'} / 52週高値: ${ov['52WeekHigh'] || '—'} / 52週安値: ${ov['52WeekLow'] || '—'}`,
+        `株価: ${data.price ? formatCurrency(data.price, currency) : '—'} / 52週高値: ${fmtRaw(data.high52)} / 52週安値: ${fmtRaw(data.low52)}`,
         '',
         `【バリュエーション】`,
-        `PER: ${ov.PERatio || '—'} / PBR: ${ov.PriceToBookRatio || '—'} / PEG: ${ov.PEGRatio || '—'}`,
-        `EPS: ${ov.EPS || '—'} / EV/EBITDA: ${ov.EVToEBITDA || '—'}`,
-        `配当利回り: ${ov.DividendYield ? (Number(ov.DividendYield) * 100).toFixed(2) + '%' : '—'}`,
-        `時価総額: ${ov.MarketCapitalization ? formatNumber(ov.MarketCapitalization, 'B') + ' ' + currency : '—'}`,
+        `PER: ${fmtRaw(data.per)} / PBR: ${fmtRaw(data.pbr)} / PEG: ${fmtRaw(data.peg)}`,
+        `EPS: ${fmtRaw(data.eps)} / EV/EBITDA: ${fmtRaw(data.evEbitda)}`,
+        `配当利回り: ${data.dividendYield ? (Number(data.dividendYield) * 100).toFixed(2) + '%' : '—'}`,
+        `時価総額: ${fmtB(data.marketCap)}`,
         '',
         `【収益性】`,
-        `ROE: ${ov.ReturnOnEquityTTM ? (Number(ov.ReturnOnEquityTTM) * 100).toFixed(1) + '%' : '—'} / ROA: ${ov.ReturnOnAssetsTTM ? (Number(ov.ReturnOnAssetsTTM) * 100).toFixed(1) + '%' : '—'}`,
-        `営業利益率: ${ov.OperatingMarginTTM ? (Number(ov.OperatingMarginTTM) * 100).toFixed(1) + '%' : '—'} / 純利益率: ${ov.ProfitMargin ? (Number(ov.ProfitMargin) * 100).toFixed(1) + '%' : '—'}`,
-        `売上高（TTM）: ${ov.RevenueTTM ? formatNumber(ov.RevenueTTM, 'B') + ' ' + currency : '—'} / EBITDA: ${ov.EBITDA ? formatNumber(ov.EBITDA, 'B') + ' ' + currency : '—'}`,
+        `ROE: ${fmtPct(data.roe)} / ROA: ${fmtPct(data.roa)}`,
+        `営業利益率: ${fmtPct(data.operatingMargin)} / 純利益率: ${fmtPct(data.profitMargin)}`,
+        `売上高（TTM）: ${fmtB(data.revenueTTM)} / EBITDA: ${fmtB(data.ebitda)}`,
         '',
         `【成長性】`,
-        `売上成長（QoQ YoY）: ${ov.QuarterlyRevenueGrowthYOY ? (Number(ov.QuarterlyRevenueGrowthYOY) * 100).toFixed(1) + '%' : '—'}`,
-        `利益成長（QoQ YoY）: ${ov.QuarterlyEarningsGrowthYOY ? (Number(ov.QuarterlyEarningsGrowthYOY) * 100).toFixed(1) + '%' : '—'}`,
-        `ベータ値: ${ov.Beta || '—'} / アナリスト目標株価: ${ov.AnalystTargetPrice || '—'}`,
+        `売上成長（QoQ YoY）: ${fmtPct(data.revenueGrowth)}`,
+        `利益成長（QoQ YoY）: ${fmtPct(data.earningsGrowth)}`,
+        `ベータ値: ${fmtRaw(data.beta)} / アナリスト目標株価: ${fmtRaw(data.analystTarget)}`,
       ];
       return lines.join('\n');
     }
@@ -1317,7 +1484,7 @@
     const PROMPT_TEMPLATES = [
       {
         title: '総合バリュエーション分析',
-        build: (ov, quote, style, period, summary) => `以下は${ov.Name || ov.Symbol}（${ov.Symbol}）の最新財務データです。
+        build: (data, style, period, summary) => `以下は${data.name}（${data.symbol}）の最新財務データです。
 
 ${summary}
 
@@ -1329,7 +1496,7 @@ ${summary}
       },
       {
         title: '収益性・成長性レポート',
-        build: (ov, quote, style, period, summary) => `以下は${ov.Name || ov.Symbol}（${ov.Symbol}）の最新財務データです。
+        build: (data, style, period, summary) => `以下は${data.name}（${data.symbol}）の最新財務データです。
 
 ${summary}
 
@@ -1341,7 +1508,7 @@ ${summary}
       },
       {
         title: 'リスク・シナリオ分析',
-        build: (ov, quote, style, period, summary) => `以下は${ov.Name || ov.Symbol}（${ov.Symbol}）の最新財務データです。
+        build: (data, style, period, summary) => `以下は${data.name}（${data.symbol}）の最新財務データです。
 
 ${summary}
 
@@ -1349,36 +1516,36 @@ ${style}の観点で${period}のリスクシナリオを分析してください
 【強気シナリオ】: 想定株価・実現条件
 【中立シナリオ】: 想定株価・主な前提
 【弱気シナリオ】: 想定株価・最大下落要因
-また、ベータ値${ov.Beta || '不明'}を踏まえた市場全体下落時の影響も説明してください。`
+また、ベータ値${data.beta || '不明'}を踏まえた市場全体下落時の影響も説明してください。`
       },
       {
         title: 'テクニカル + ファンダメンタル統合分析',
-        build: (ov, quote, style, period, summary) => `以下は${ov.Name || ov.Symbol}（${ov.Symbol}）の最新財務データです。
+        build: (data, style, period, summary) => `以下は${data.name}（${data.symbol}）の最新財務データです。
 
 ${summary}
 
-50日移動平均（${ov['50DayMovingAverage'] || '—'}）・200日移動平均（${ov['200DayMovingAverage'] || '—'}）と現在株価（${quote['05. price'] || '—'}）の関係を分析しつつ、ファンダメンタルズとテクニカルを組み合わせた${period}の投資判断を示してください。
+50日移動平均（${data.ma50 || '—'}）・200日移動平均（${data.ma200 || '—'}）と現在株価（${data.price ? formatCurrency(data.price, data.currency) : '—'}）の関係を分析しつつ、ファンダメンタルズとテクニカルを組み合わせた${period}の投資判断を示してください。
 具体的なエントリー価格帯・利益確定ライン・損切りラインも提示してください。`
       },
       {
         title: '競合比較・セクター分析',
-        build: (ov, quote, style, period, summary) => `以下は${ov.Name || ov.Symbol}（${ov.Symbol}）の最新財務データです。
+        build: (data, style, period, summary) => `以下は${data.name}（${data.symbol}）の最新財務データです。
 
 ${summary}
 
-${ov.Sector || '当該'}セクターの代表的な競合企業2〜3社と比較して分析してください。
+${data.sector && data.sector !== '—' ? data.sector : '当該'}セクターの代表的な競合企業2〜3社と比較して分析してください。
 1. 収益性指標（ROE・利益率）の業界内ポジション
 2. バリュエーション比較（PER・PBR）
-3. ${ov.Name || ov.Symbol}の競争優位性・差別化要因
+3. ${data.name}の競争優位性・差別化要因
 4. ${style}に適した場合の優先順位`
       },
       {
         title: '配当・長期投資家向け分析',
-        build: (ov, quote, style, period, summary) => `以下は${ov.Name || ov.Symbol}（${ov.Symbol}）の最新財務データです。
+        build: (data, style, period, summary) => `以下は${data.name}（${data.symbol}）の最新財務データです。
 
 ${summary}
 
-配当利回り${ov.DividendYield ? (Number(ov.DividendYield) * 100).toFixed(2) + '%' : '情報なし'}を踏まえて、長期投資・インカムゲイン目的での保有価値を分析してください。
+配当利回り${data.dividendYield ? (Number(data.dividendYield) * 100).toFixed(2) + '%' : '情報なし'}を踏まえて、長期投資・インカムゲイン目的での保有価値を分析してください。
 1. 配当の持続可能性評価（利益率・キャッシュフローから判断）
 2. 10年保有した場合の配当収入と株価上昇の試算
 3. ${style}スタイルのポートフォリオにおける適切な組み入れ比率
@@ -1386,21 +1553,21 @@ ${summary}
       }
     ];
 
-    function generatePrompts(ov, quote) {
+    function generatePrompts(data) {
       const style = document.getElementById('analyzeStyleSelect').value;
       const period = document.getElementById('periodSelect').value;
-      const summary = buildDataSummary(ov, quote);
+      const summary = buildDataSummary(data);
 
       const grid = document.getElementById('promptGrid');
       grid.innerHTML = '';
 
       PROMPT_TEMPLATES.forEach((tmpl, i) => {
-        const text = tmpl.build(ov, quote, style, period, summary);
+        const text = tmpl.build(data, style, period, summary);
         grid.appendChild(createPromptCard(i + 1, tmpl.title, text));
       });
 
       document.getElementById('analysisMeta').textContent =
-        `${ov.Name || ov.Symbol} / ${style} / ${period}`;
+        `${data.name} / ${style} / ${period}`;
     }
 
     /* ===========================
