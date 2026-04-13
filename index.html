@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>株分析プロンプトジェネレーター | Claude対応</title>
-  <meta name="description" content="銘柄を探す・分析するAIプロンプトを自動生成。条件を選ぶだけでスクリーニングプロンプト3種・分析プロンプト6種を即生成。Claudeにそのまま貼り付けて使えます。">
-  <meta property="og:title" content="株分析プロンプトジェネレーター">
-  <meta property="og:description" content="銘柄を探す・分析するAIプロンプトを自動生成。Claudeにそのまま貼り付けて使えます。">
+  <title>株分析ジェネレーター v2 | 7人のアナリスト視点でAI分析プロンプト生成</title>
+  <meta name="description" content="四季報元編集長・Goldman Sachs・BlackRock・Morgan Stanley...7種のアナリスト視点から株分析プロンプトを自動生成。決算フェーズ別・マクロシナリオ分析も対応。ClaudeやGeminiにそのまま貼り付けて使えます。">
+  <meta property="og:title" content="株分析ジェネレーター v2 | 7人のアナリスト視点でAI分析">
+  <meta property="og:description" content="四季報元編集長・Goldman Sachs・BlackRock・Morgan Stanley...7種のアナリスト視点から株分析プロンプトを自動生成。機関投資家レベルの分析を無料で。">
   <meta property="og:image" content="https://techio-code.github.io/kabu-prompt-generator/ogp.png">
   <meta property="og:url" content="https://techio-code.github.io/kabu-prompt-generator/">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="株分析プロンプトジェネレーター">
-  <meta name="twitter:description" content="銘柄を探す・分析するAIプロンプトを自動生成。Claudeにそのまま貼り付けて使えます。">
+  <meta name="twitter:title" content="株分析ジェネレーター v2 | 7人のアナリスト視点でAI分析">
+  <meta name="twitter:description" content="四季報元編集長・Goldman Sachs・BlackRock・Morgan Stanley...7種のアナリスト視点から株分析プロンプトを自動生成。">
   <meta name="twitter:image" content="https://techio-code.github.io/kabu-prompt-generator/ogp.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,6 +22,7 @@
       --color-primary: #6C63FF;
       --color-accent: #00D4AA;
       --color-secondary: #FBA32A;
+      --color-error: #FF5252;
       --color-light: #F8F9FF;
       --color-text-primary: #2D2D2D;
       --color-text-secondary: #888888;
@@ -55,6 +56,9 @@
       background: #ffffff;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
       padding: var(--space-md) var(--space-lg);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
 
     .header-inner {
@@ -62,12 +66,12 @@
       margin: 0 auto;
       display: flex;
       align-items: center;
-      gap: var(--space-md);
+      gap: var(--space-sm);
       flex-wrap: wrap;
     }
 
     .header-title {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 700;
       color: var(--color-text-primary);
       letter-spacing: 0.05em;
@@ -76,20 +80,28 @@
     .badge {
       display: inline-flex;
       align-items: center;
-      height: 24px;
+      height: 22px;
       padding: 0 var(--space-sm);
       border-radius: 100px;
-      font-size: 12px;
-      font-weight: 600;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    .badge-primary {
       background: rgba(108, 99, 255, 0.15);
       color: var(--color-primary);
+    }
+
+    .badge-new {
+      background: rgba(251, 163, 42, 0.15);
+      color: #c47a00;
     }
 
     /* ========== Main ========== */
     main {
       max-width: 960px;
       margin: 0 auto;
-      padding: var(--space-2xl) var(--space-lg);
+      padding: var(--space-2xl) var(--space-md);
     }
 
     /* ========== Hero ========== */
@@ -98,73 +110,36 @@
       margin-bottom: var(--space-2xl);
     }
 
-    .hero-title {
-      font-size: 28px;
+    .hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-xs);
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.05em;
+      color: var(--color-primary);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
       margin-bottom: var(--space-sm);
     }
 
+    .hero-title {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      line-height: 1.4;
+      margin-bottom: var(--space-md);
+    }
+
     @media (min-width: 600px) {
-      .hero-title {
-        font-size: 36px;
-      }
+      .hero-title { font-size: 34px; }
     }
 
     .hero-desc {
-      font-size: 16px;
+      font-size: 15px;
       color: var(--color-text-secondary);
       max-width: 560px;
       margin: 0 auto;
-    }
-
-    /* ========== Tab ========== */
-    .tab-container {
-      display: flex;
-      gap: 4px;
-      background: #E8E8F0;
-      padding: 4px;
-      border-radius: 10px;
-      margin-bottom: var(--space-xl);
-    }
-
-    .tab-btn {
-      flex: 1;
-      padding: 10px 16px;
-      border: none;
-      border-radius: 8px;
-      background: transparent;
-      font-size: 15px;
-      font-weight: 600;
-      color: #888888;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: var(--font-sans);
-    }
-
-    .tab-btn.active {
-      background: #ffffff;
-      color: var(--color-primary);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .tab-btn:hover:not(.active) {
-      color: var(--color-text-primary);
-    }
-
-    /* ========== Tab Panels ========== */
-    .tab-panel {
-      display: none;
-    }
-
-    .tab-panel.active {
-      display: block;
-      animation: fadeIn 0.25s ease;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      line-height: 1.8;
     }
 
     /* ========== Card ========== */
@@ -180,51 +155,135 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
     }
 
-    /* ========== Form ========== */
-    .form-card {
-      margin-bottom: var(--space-2xl);
-    }
-
-    .form-card-title {
-      font-size: 18px;
+    .card-title {
+      font-size: 17px;
       font-weight: 700;
       margin-bottom: var(--space-lg);
       color: var(--color-text-primary);
-    }
-
-    .form-grid {
-      display: grid;
-      gap: var(--space-md);
-      grid-template-columns: 1fr;
-    }
-
-    @media (min-width: 600px) {
-      .form-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .form-field-ticker {
-        grid-column: 1 / -1;
-      }
-
-      .form-field-full {
-        grid-column: 1 / -1;
-      }
-    }
-
-    .form-field {
       display: flex;
-      flex-direction: column;
-      gap: var(--space-xs);
+      align-items: center;
+      gap: var(--space-sm);
     }
 
-    .form-label {
-      font-size: 14px;
+    .card-title-icon {
+      width: 28px;
+      height: 28px;
+      background: rgba(108, 99, 255, 0.1);
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+    }
+
+    /* Glass card for analyst selector */
+    .glass-light {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(108, 99, 255, 0.12);
+      border-radius: 12px;
+    }
+
+    /* ========== Section ========== */
+    .section {
+      margin-bottom: var(--space-xl);
+    }
+
+    /* ========== Step ========== */
+    .steps-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      margin-bottom: var(--space-2xl);
+      overflow-x: auto;
+      padding-bottom: var(--space-xs);
+    }
+
+    .step-pill {
+      display: flex;
+      align-items: center;
+      gap: var(--space-sm);
+      background: #ffffff;
+      border: 1.5px solid #E8E8F0;
+      border-radius: 100px;
+      padding: 6px 14px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .step-pill-num {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: #ffffff;
+      font-size: 11px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-pill-text {
+      font-size: 12px;
       font-weight: 600;
       color: var(--color-text-primary);
     }
 
-    .form-label span {
+    .step-arrow {
+      color: var(--color-text-secondary);
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    /* ========== Market Toggle ========== */
+    .market-toggle {
+      display: flex;
+      gap: 4px;
+      background: #E8E8F0;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: var(--space-lg);
+      width: fit-content;
+    }
+
+    .market-btn {
+      padding: 8px 20px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      font-size: 14px;
+      font-weight: 600;
+      color: #888888;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+    }
+
+    .market-btn.active {
+      background: #ffffff;
+      color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ========== Form ========== */
+    .form-field {
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-xs);
+      margin-bottom: var(--space-lg);
+    }
+
+    .form-label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+
+    .form-label-note {
       font-size: 12px;
       font-weight: 400;
       color: var(--color-text-secondary);
@@ -232,7 +291,7 @@
     }
 
     .input {
-      height: 44px;
+      height: 48px;
       padding: 0 var(--space-md);
       border-radius: 8px;
       border: 1.5px solid #D0D0D0;
@@ -250,64 +309,182 @@
       box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.15);
     }
 
-    .input::placeholder {
-      color: #BBBBBB;
+    .input::placeholder { color: #BBBBBB; }
+
+    .ticker-examples {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-xs);
+      margin-top: var(--space-sm);
     }
 
-    select.input {
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      padding-right: 36px;
+    .ticker-chip {
+      height: 28px;
+      padding: 0 10px;
+      border-radius: 100px;
+      background: rgba(108, 99, 255, 0.1);
+      color: var(--color-primary);
+      font-size: 12px;
+      font-weight: 600;
+      border: none;
       cursor: pointer;
+      font-family: var(--font-sans);
+      transition: background 0.15s;
     }
 
-    /* ========== Radio Group ========== */
-    .radio-group {
+    .ticker-chip:hover { background: rgba(108, 99, 255, 0.2); }
+
+    /* ========== Analyst Selector ========== */
+    .analyst-grid {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: var(--space-sm);
     }
 
-    .radio-label {
+    @media (min-width: 500px) {
+      .analyst-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (min-width: 720px) {
+      .analyst-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .analyst-card {
+      position: relative;
+      border: 2px solid #E8E8F0;
+      border-radius: 10px;
+      padding: var(--space-md);
+      cursor: pointer;
+      transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+      background: #ffffff;
+      user-select: none;
+    }
+
+    .analyst-card:hover {
+      border-color: var(--color-primary);
+      box-shadow: 0 4px 12px rgba(108, 99, 255, 0.12);
+    }
+
+    .analyst-card.selected {
+      border-color: var(--color-primary);
+      background: rgba(108, 99, 255, 0.04);
+      box-shadow: 0 4px 16px rgba(108, 99, 255, 0.18);
+    }
+
+    .analyst-card-icon {
+      font-size: 24px;
+      margin-bottom: var(--space-xs);
+      display: block;
+    }
+
+    .analyst-card-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: 2px;
+      line-height: 1.3;
+    }
+
+    .analyst-card-role {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      line-height: 1.4;
+    }
+
+    .analyst-card-check {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--color-primary);
+      color: #ffffff;
+      font-size: 10px;
       display: flex;
       align-items: center;
-      gap: var(--space-sm);
-      height: 44px;
-      padding: 0 var(--space-md);
-      border-radius: 8px;
-      border: 1.5px solid #D0D0D0;
-      font-size: 14px;
-      font-weight: 400;
-      color: var(--color-text-primary);
-      cursor: pointer;
-      transition: border-color 0.2s ease, background 0.2s ease;
-      background: #ffffff;
-    }
-
-    .radio-label:hover {
-      border-color: var(--color-primary);
-    }
-
-    .radio-label input[type="radio"] {
-      accent-color: var(--color-primary);
-      width: 16px;
-      height: 16px;
-      flex-shrink: 0;
-    }
-
-    .radio-label.checked {
-      border-color: var(--color-primary);
-      background: rgba(108, 99, 255, 0.06);
-      color: var(--color-primary);
-      font-weight: 600;
-    }
-
-    .form-actions {
-      margin-top: var(--space-lg);
-      display: flex;
       justify-content: center;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .analyst-card.selected .analyst-card-check {
+      opacity: 1;
+    }
+
+    /* ========== Phase Tab ========== */
+    .phase-tabs {
+      display: flex;
+      gap: 4px;
+      background: #E8E8F0;
+      padding: 4px;
+      border-radius: 10px;
+      margin-bottom: var(--space-lg);
+    }
+
+    .phase-tab {
+      flex: 1;
+      padding: 9px 12px;
+      border: none;
+      border-radius: 7px;
+      background: transparent;
+      font-size: 13px;
+      font-weight: 600;
+      color: #888888;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: var(--font-sans);
+      text-align: center;
+    }
+
+    .phase-tab.active {
+      background: #ffffff;
+      color: var(--color-primary);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    /* ========== Macro Scenario ========== */
+    .scenario-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-sm);
+      margin-bottom: var(--space-md);
+    }
+
+    @media (max-width: 480px) {
+      .scenario-grid { grid-template-columns: 1fr; }
+    }
+
+    .scenario-btn {
+      padding: var(--space-md);
+      border: 2px solid #E8E8F0;
+      border-radius: 10px;
+      background: #ffffff;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      transition: border-color 0.15s, background 0.15s;
+      text-align: center;
+    }
+
+    .scenario-btn:hover { border-color: var(--color-primary); }
+
+    .scenario-btn.active {
+      border-color: var(--color-secondary);
+      background: rgba(251, 163, 42, 0.05);
+    }
+
+    .scenario-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+
+    .scenario-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text-primary);
+    }
+
+    /* ========== Generate Button ========== */
+    .generate-wrap {
+      text-align: center;
+      margin-top: var(--space-xl);
     }
 
     .btn {
@@ -317,36 +494,37 @@
       border-radius: 8px;
       font-size: 16px;
       font-weight: 600;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.06em;
       cursor: pointer;
       transition: all 0.2s ease;
       border: none;
       font-family: var(--font-sans);
     }
 
-    .btn:hover {
-      filter: brightness(1.1);
-      transform: translateY(-2px);
-    }
-
-    .btn:active {
-      transform: translateY(0);
-    }
+    .btn:hover { filter: brightness(1.08); transform: translateY(-2px); }
+    .btn:active { transform: translateY(0); }
 
     .btn-primary {
       background: var(--color-primary);
       color: #ffffff;
       padding: 0 var(--space-2xl);
-      font-size: 16px;
+      height: 52px;
+      font-size: 17px;
+      border-radius: 10px;
+    }
+
+    .btn-sm {
+      height: 36px;
+      padding: 0 var(--space-md);
+      font-size: 13px;
     }
 
     .btn-copy {
-      height: 36px;
-      padding: 0 var(--space-md);
+      height: 34px;
+      padding: 0 14px;
       border-radius: 6px;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
-      letter-spacing: 0.05em;
       cursor: pointer;
       transition: all 0.2s ease;
       border: 1.5px solid var(--color-primary);
@@ -356,28 +534,27 @@
       white-space: nowrap;
     }
 
-    .btn-copy:hover {
-      filter: brightness(1.1);
-      transform: translateY(-1px);
-    }
-
+    .btn-copy:hover { filter: brightness(1.1); transform: translateY(-1px); }
     .btn-copy.copied {
       background: var(--color-accent);
       border-color: var(--color-accent);
       color: #ffffff;
     }
 
-    /* ========== Output Section ========== */
-    .output-section {
+    /* ========== Result Section ========== */
+    .result-section {
       display: none;
-    }
-
-    .output-section.visible {
-      display: block;
       animation: fadeIn 0.3s ease;
     }
 
-    .output-header {
+    .result-section.visible { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -386,47 +563,39 @@
       margin-bottom: var(--space-lg);
     }
 
-    .output-title {
+    .result-title {
       font-size: 18px;
       font-weight: 700;
     }
 
-    .output-meta {
+    .result-meta {
       font-size: 13px;
       color: var(--color-text-secondary);
     }
 
+    /* ========== Prompt Cards ========== */
     .prompt-grid {
       display: grid;
-      gap: var(--space-xl);
+      gap: var(--space-lg);
       grid-template-columns: 1fr;
     }
 
     @media (min-width: 720px) {
-      .prompt-grid {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      .prompt-grid.single-col {
-        grid-template-columns: 1fr;
-      }
+      .prompt-grid { grid-template-columns: 1fr 1fr; }
     }
 
-    /* ========== Prompt Card ========== */
     .prompt-card {
       background: #ffffff;
       border-radius: 12px;
       padding: var(--space-lg);
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-      transition: box-shadow 0.2s ease;
       display: flex;
       flex-direction: column;
       gap: var(--space-md);
+      transition: box-shadow 0.2s ease;
     }
 
-    .prompt-card:hover {
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    }
+    .prompt-card:hover { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
 
     .prompt-card-header {
       display: flex;
@@ -438,18 +607,18 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      width: 28px;
-      height: 28px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       background: var(--color-primary);
       color: #ffffff;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 700;
       flex-shrink: 0;
     }
 
     .prompt-card-title {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--color-text-primary);
       line-height: 1.4;
@@ -458,11 +627,11 @@
 
     .prompt-textarea {
       width: 100%;
-      min-height: 140px;
+      min-height: 200px;
       padding: var(--space-md);
       border-radius: 8px;
       border: 1.5px solid #E8E8E8;
-      font-size: 14px;
+      font-size: 13px;
       font-family: var(--font-sans);
       line-height: 1.8;
       color: var(--color-text-primary);
@@ -482,155 +651,125 @@
       justify-content: flex-end;
     }
 
-    /* ========== Cross-sell Banner ========== */
-    .crosssell-banner {
-      display: flex;
-      align-items: center;
-      gap: var(--space-sm);
-      background: rgba(108, 99, 255, 0.06);
-      border-left: 3px solid var(--color-primary);
-      border-radius: 0 8px 8px 0;
-      padding: var(--space-md);
-      margin-top: var(--space-xl);
-      font-size: 14px;
-      color: var(--color-text-secondary);
-      line-height: 1.7;
-      cursor: pointer;
-      transition: background 0.2s ease;
+    /* Scenario result is full-width */
+    .prompt-card-full {
+      grid-column: 1 / -1;
     }
 
-    .crosssell-banner:hover {
-      background: rgba(108, 99, 255, 0.12);
-    }
-
-    .crosssell-banner a {
-      color: var(--color-primary);
-      font-weight: 600;
-      text-decoration: underline;
-      text-underline-offset: 2px;
-    }
-
-    /* ========== Notice ========== */
-    .notice {
-      display: flex;
-      align-items: flex-start;
-      gap: var(--space-sm);
-      background: rgba(108, 99, 255, 0.06);
-      border-left: 3px solid var(--color-primary);
-      border-radius: 0 8px 8px 0;
-      padding: var(--space-md);
-      margin-top: var(--space-xl);
-      font-size: 14px;
-      color: var(--color-text-secondary);
-      line-height: 1.7;
-    }
-
-    .notice-icon {
-      font-size: 16px;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-
-    /* ========== How To Section ========== */
-    .how-to-section {
-      background: white;
+    /* ========== Google Finance Guide ========== */
+    .gf-guide {
+      background: linear-gradient(135deg, rgba(108, 99, 255, 0.06) 0%, rgba(0, 212, 170, 0.04) 100%);
+      border: 1.5px solid rgba(108, 99, 255, 0.15);
       border-radius: 12px;
-      padding: 24px;
-      margin-bottom: 32px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      padding: var(--space-lg);
+      margin-top: var(--space-xl);
     }
 
-    .how-to-title {
-      font-size: 14px;
+    .gf-guide-title {
+      font-size: 15px;
       font-weight: 700;
       color: var(--color-primary);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-    }
-
-    .steps-container {
+      margin-bottom: var(--space-md);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: var(--space-sm);
     }
 
-    .step-card {
-      flex: 1;
-      background: var(--color-light);
-      border-radius: 10px;
-      padding: 16px;
-      text-align: center;
+    .gf-guide-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: var(--space-md);
     }
 
-    .step-number {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--color-primary);
-      letter-spacing: 0.1em;
-      margin-bottom: 6px;
+    @media (min-width: 600px) {
+      .gf-guide-grid { grid-template-columns: repeat(3, 1fr); }
     }
 
-    .step-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
+    .gf-guide-item {
+      background: rgba(255, 255, 255, 0.7);
+      border-radius: 8px;
+      padding: var(--space-md);
     }
 
-    .step-title {
-      font-size: 14px;
+    .gf-guide-item-icon { font-size: 20px; margin-bottom: 6px; display: block; }
+
+    .gf-guide-item-title {
+      font-size: 13px;
       font-weight: 700;
       color: var(--color-text-primary);
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
-    .step-desc {
-      font-size: 13px;
+    .gf-guide-item-desc {
+      font-size: 12px;
       color: var(--color-text-secondary);
       line-height: 1.6;
     }
 
-    .step-arrow {
-      font-size: 20px;
-      color: var(--color-primary);
-      flex-shrink: 0;
-    }
-
-    @media (max-width: 600px) {
-      .steps-container {
-        flex-direction: column;
-      }
-      .step-arrow {
-        display: none;
-      }
-      .step-card {
-        width: 100%;
-      }
-    }
-
-    /* ========== Warning Banner ========== */
-    .warning-banner {
-      display: none;
-      background: rgba(251, 163, 42, 0.12);
-      border: 1.5px solid #FBA32A;
-      border-radius: 8px;
-      padding: 12px 16px;
-      font-size: 14px;
-      color: #8a5a00;
-      margin-bottom: 16px;
-      line-height: 1.6;
-    }
-    .warning-banner.show {
+    /* ========== Info Callout ========== */
+    .callout {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
+      gap: var(--space-sm);
+      border-radius: 8px;
+      padding: var(--space-md);
+      font-size: 13px;
+      line-height: 1.6;
+      margin-bottom: var(--space-lg);
     }
+
+    .callout-info {
+      background: rgba(108, 99, 255, 0.06);
+      border-left: 3px solid var(--color-primary);
+      border-radius: 0 8px 8px 0;
+      color: var(--color-text-secondary);
+    }
+
+    .callout-icon { flex-shrink: 0; font-size: 15px; }
+
+    /* ========== Note CTA ========== */
+    .note-cta {
+      text-align: center;
+      padding: var(--space-xl) var(--space-md);
+      background: #ffffff;
+      border-top: 1px solid #E8E8F0;
+      margin-top: var(--space-2xl);
+    }
+
+    .note-cta p {
+      font-size: 14px;
+      color: var(--color-text-secondary);
+      margin-bottom: var(--space-sm);
+    }
+
+    .note-cta a {
+      display: inline-block;
+      background: var(--color-primary);
+      color: #ffffff;
+      text-decoration: none;
+      padding: 10px 24px;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 700;
+      transition: filter 0.2s;
+    }
+
+    .note-cta a:hover { filter: brightness(1.1); }
 
     /* ========== Footer ========== */
     footer {
       text-align: center;
-      padding: var(--space-xl) var(--space-lg);
+      padding: var(--space-lg) var(--space-md);
       color: var(--color-text-secondary);
       font-size: 13px;
+      border-top: 1px solid #E8E8F0;
+    }
+
+    /* ========== Responsive Adjustments ========== */
+    @media (max-width: 480px) {
+      .hero-title { font-size: 22px; }
+      main { padding: var(--space-xl) var(--space-md); }
+      .card { padding: var(--space-md); }
     }
   </style>
 </head>
@@ -639,8 +778,9 @@
   <!-- Header -->
   <header>
     <div class="header-inner">
-      <h1 class="header-title">株分析プロンプトジェネレーター</h1>
-      <span class="badge">Claude対応</span>
+      <h1 class="header-title">株分析ジェネレーター</h1>
+      <span class="badge badge-primary">v2</span>
+      <span class="badge badge-new">7視点対応</span>
     </div>
   </header>
 
@@ -649,386 +789,721 @@
 
     <!-- Hero -->
     <div class="hero">
-      <p class="hero-title">AI株分析プロンプトを<br>ワンクリックで生成</p>
-      <p class="hero-desc">条件を選ぶだけで、Claudeにそのまま貼り付けられるプロンプトを自動生成します。</p>
+      <div class="hero-eyebrow">AI Prompt Generator</div>
+      <h2 class="hero-title">機関投資家の視点で<br>株を分析するプロンプトを生成</h2>
+      <p class="hero-desc">
+        四季報元編集長・Goldman Sachs・BlackRock・Morgan Stanley...<br>
+        7種のアナリスト視点から、AIへの高精度な分析プロンプトを自動生成。<br>
+        ClaudeやGeminiにそのままコピペして使えます。
+      </p>
     </div>
 
-    <!-- How To Section -->
-    <div class="how-to-section">
-      <div class="how-to-title">📖 使い方</div>
-      <div class="steps-container">
-        <div class="step-card">
-          <div class="step-number">STEP 1</div>
-          <div class="step-icon">🔍</div>
-          <div class="step-title">銘柄を探す</div>
-          <div class="step-desc">投資スタイルや市場を選んで、気になる銘柄を見つけよう</div>
-        </div>
-        <div class="step-arrow">→</div>
-        <div class="step-card">
-          <div class="step-number">STEP 2</div>
-          <div class="step-icon">📋</div>
-          <div class="step-title">プロンプトをコピー</div>
-          <div class="step-desc">生成されたプロンプトの「コピー」ボタンを押すだけ</div>
-        </div>
-        <div class="step-arrow">→</div>
-        <div class="step-card">
-          <div class="step-number">STEP 3</div>
-          <div class="step-icon">🤖</div>
-          <div class="step-title">Claudeに貼り付ける</div>
-          <div class="step-desc">Claude.aiを開いて貼り付けるだけ。すぐに分析が始まる！</div>
+    <!-- Steps -->
+    <div class="steps-row">
+      <div class="step-pill">
+        <span class="step-pill-num">1</span>
+        <span class="step-pill-text">銘柄入力</span>
+      </div>
+      <span class="step-arrow">→</span>
+      <div class="step-pill">
+        <span class="step-pill-num">2</span>
+        <span class="step-pill-text">アナリスト視点を選ぶ</span>
+      </div>
+      <span class="step-arrow">→</span>
+      <div class="step-pill">
+        <span class="step-pill-num">3</span>
+        <span class="step-pill-text">決算フェーズを選ぶ</span>
+      </div>
+      <span class="step-arrow">→</span>
+      <div class="step-pill">
+        <span class="step-pill-num">4</span>
+        <span class="step-pill-text">プロンプト生成 → コピー</span>
+      </div>
+    </div>
+
+    <!-- STEP 1: 銘柄入力 -->
+    <div class="section card" style="margin-bottom: var(--space-xl);">
+      <div class="card-title">
+        <span class="card-title-icon">🏢</span>
+        STEP 1 — 銘柄を入力
+      </div>
+
+      <!-- 日本株/米国株トグル -->
+      <div class="market-toggle">
+        <button class="market-btn active" id="btnJP" onclick="setMarket('JP')">🇯🇵 日本株</button>
+        <button class="market-btn" id="btnUS" onclick="setMarket('US')">🇺🇸 米国株</button>
+      </div>
+
+      <div class="form-field">
+        <label class="form-label" for="tickerInput">
+          銘柄名 または 証券コード
+          <span class="form-label-note">（例: トヨタ、7203、AAPL、Apple）</span>
+        </label>
+        <input
+          type="text"
+          id="tickerInput"
+          class="input"
+          placeholder="例: 7203（トヨタ） / NVDA（エヌビディア）"
+          autocomplete="off"
+          autocapitalize="characters"
+        >
+        <div class="ticker-examples" id="tickerExamples">
+          <!-- populated by JS -->
         </div>
       </div>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="tab-container" role="tablist">
-      <button
-        class="tab-btn active"
-        id="tab-search"
-        role="tab"
-        aria-selected="true"
-        aria-controls="panel-search"
-        onclick="switchTab('search')"
-      >
-        🔍 銘柄を探す
-      </button>
-      <button
-        class="tab-btn"
-        id="tab-analyze"
-        role="tab"
-        aria-selected="false"
-        aria-controls="panel-analyze"
-        onclick="switchTab('analyze')"
-      >
-        📊 銘柄を分析する
+    <!-- STEP 2: アナリスト視点セレクター -->
+    <div class="section card" style="margin-bottom: var(--space-xl);">
+      <div class="card-title">
+        <span class="card-title-icon">👤</span>
+        STEP 2 — アナリスト視点を選ぶ
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">💡</span>
+        <span>視点によって分析の切り口が変わります。投資スタイルや知りたい内容に合わせて選んでください。</span>
+      </div>
+
+      <div class="analyst-grid" id="analystGrid">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- STEP 3: 決算フェーズ -->
+    <div class="section card" style="margin-bottom: var(--space-xl);">
+      <div class="card-title">
+        <span class="card-title-icon">📅</span>
+        STEP 3 — 決算フェーズを選ぶ
+      </div>
+
+      <div class="phase-tabs">
+        <button class="phase-tab active" id="phase-before" onclick="setPhase('before')">
+          決算前
+        </button>
+        <button class="phase-tab" id="phase-during" onclick="setPhase('during')">
+          決算中・速報
+        </button>
+        <button class="phase-tab" id="phase-after" onclick="setPhase('after')">
+          決算後
+        </button>
+        <button class="phase-tab" id="phase-none" onclick="setPhase('none')">
+          指定なし
+        </button>
+      </div>
+
+      <div id="phaseDesc" style="font-size:13px; color:var(--color-text-secondary); line-height:1.6;"></div>
+    </div>
+
+    <!-- STEP 4: マクロシナリオ（オプション） -->
+    <div class="section card" style="margin-bottom: var(--space-xl);">
+      <div class="card-title">
+        <span class="card-title-icon">🌐</span>
+        STEP 4 — マクロシナリオ分析（オプション）
+      </div>
+
+      <p style="font-size:13px; color:var(--color-text-secondary); margin-bottom:var(--space-md); line-height:1.6;">
+        シナリオを選ぶとそのマクロ環境を前提にしたプロンプトが追加生成されます。<br>
+        「なし」を選ぶとシナリオなしで生成されます。
+      </p>
+
+      <div class="scenario-grid">
+        <button class="scenario-btn active" id="scenario-none" onclick="setScenario('none')">
+          <span class="scenario-icon">—</span>
+          <span class="scenario-name">なし</span>
+        </button>
+        <button class="scenario-btn" id="scenario-yenhigh" onclick="setScenario('yenhigh')">
+          <span class="scenario-icon">💴</span>
+          <span class="scenario-name">円高進行</span>
+        </button>
+        <button class="scenario-btn" id="scenario-yenlow" onclick="setScenario('yenlow')">
+          <span class="scenario-icon">💵</span>
+          <span class="scenario-name">円安継続</span>
+        </button>
+        <button class="scenario-btn" id="scenario-ratehike" onclick="setScenario('ratehike')">
+          <span class="scenario-icon">📈</span>
+          <span class="scenario-name">利上げ局面</span>
+        </button>
+        <button class="scenario-btn" id="scenario-political" onclick="setScenario('political')">
+          <span class="scenario-icon">🗳️</span>
+          <span class="scenario-name">政局不安</span>
+        </button>
+        <button class="scenario-btn" id="scenario-recession" onclick="setScenario('recession')">
+          <span class="scenario-icon">📉</span>
+          <span class="scenario-name">景気後退</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Generate Button -->
+    <div class="generate-wrap">
+      <button class="btn btn-primary" onclick="generatePrompts()">
+        プロンプトを生成する →
       </button>
     </div>
 
-    <!-- ============ Tab: 銘柄を探す ============ -->
-    <div class="tab-panel active" id="panel-search" role="tabpanel" aria-labelledby="tab-search">
+    <!-- Result Section -->
+    <div class="result-section" id="resultSection" style="margin-top: var(--space-2xl);">
 
-      <!-- Form -->
-      <div class="card form-card">
-        <h2 class="form-card-title">スクリーニング条件を選択</h2>
-        <div class="form-grid">
+      <div class="result-header">
+        <h2 class="result-title" id="resultTitle">生成されたプロンプト</h2>
+        <span class="result-meta" id="resultMeta"></span>
+      </div>
 
-          <!-- 投資スタイル -->
-          <div class="form-field form-field-full">
-            <label class="form-label">投資スタイル</label>
-            <div class="radio-group" id="styleRadioGroup">
-              <label class="radio-label checked" id="radio-label-growth">
-                <input type="radio" name="investStyle" value="グロース投資（成長株）" checked onchange="updateRadioStyles('styleRadioGroup')">
-                グロース投資（成長株）
-              </label>
-              <label class="radio-label" id="radio-label-value">
-                <input type="radio" name="investStyle" value="バリュー投資（割安株）" onchange="updateRadioStyles('styleRadioGroup')">
-                バリュー投資（割安株）
-              </label>
-              <label class="radio-label" id="radio-label-dividend">
-                <input type="radio" name="investStyle" value="高配当投資" onchange="updateRadioStyles('styleRadioGroup')">
-                高配当投資
-              </label>
-              <label class="radio-label" id="radio-label-swing">
-                <input type="radio" name="investStyle" value="スイングトレード" onchange="updateRadioStyles('styleRadioGroup')">
-                スイングトレード
-              </label>
+      <div class="callout callout-info">
+        <span class="callout-icon">📋</span>
+        <span>コピーしてClaude・Geminiに貼り付けてください。銘柄情報・アナリスト視点・決算フェーズがすべてプロンプトに組み込まれています。</span>
+      </div>
+
+      <!-- Main Prompt Cards -->
+      <div class="prompt-grid" id="mainPromptGrid"></div>
+
+      <!-- Scenario Prompt (if selected) -->
+      <div id="scenarioPromptWrap" style="margin-top: var(--space-xl); display:none;">
+        <h3 style="font-size:16px; font-weight:700; margin-bottom:var(--space-md);">
+          マクロシナリオ分析プロンプト
+        </h3>
+        <div class="prompt-grid" id="scenarioPromptGrid"></div>
+      </div>
+
+      <!-- Google Finance Guide -->
+      <div class="gf-guide">
+        <div class="gf-guide-title">
+          <span>📊</span>
+          Google Finance との組み合わせ方
+        </div>
+        <div class="gf-guide-grid">
+          <div class="gf-guide-item">
+            <span class="gf-guide-item-icon">🔍</span>
+            <div class="gf-guide-item-title">Deep Research に入力</div>
+            <div class="gf-guide-item-desc">
+              Google Finance の「Deep Research」機能にプロンプトをそのまま貼り付けると、Geminiが数百ソースを横断して回答します。
             </div>
           </div>
-
-          <!-- 注目セクター -->
-          <div class="form-field">
-            <label class="form-label" for="sectorSelect">注目セクター</label>
-            <select id="sectorSelect" class="input">
-              <option value="セクター問わない">セクター問わない</option>
-              <option value="AI・半導体">AI・半導体</option>
-              <option value="EV・脱炭素・再エネ">EV・脱炭素・再エネ</option>
-              <option value="内需・生活消費">内需・生活消費</option>
-              <option value="金融・保険">金融・保険</option>
-              <option value="医療・ヘルスケア">医療・ヘルスケア</option>
-              <option value="輸出・製造業">輸出・製造業</option>
-              <option value="不動産・インフラ">不動産・インフラ</option>
-              <option value="食品・外食">食品・外食</option>
-            </select>
+          <div class="gf-guide-item">
+            <span class="gf-guide-item-icon">🎙️</span>
+            <div class="gf-guide-item-title">決算説明会ライブ追跡</div>
+            <div class="gf-guide-item-desc">
+              「決算中」フェーズのプロンプトを決算説明会の文字起こしと組み合わせると、AIがリアルタイムで要点を整理します。
+            </div>
           </div>
-
-          <!-- 時価総額 -->
-          <div class="form-field">
-            <label class="form-label" for="capSelect">時価総額</label>
-            <select id="capSelect" class="input">
-              <option value="大型株（時価総額1兆円以上）">大型株（時価総額1兆円以上）</option>
-              <option value="中型株（1,000億〜1兆円）">中型株（1,000億〜1兆円）</option>
-              <option value="小型株（1,000億円未満）">小型株（1,000億円未満）</option>
-              <option value="時価総額は問わない">問わない</option>
-            </select>
-          </div>
-
-          <!-- リスク許容度 -->
-          <div class="form-field">
-            <label class="form-label" for="riskSelect">リスク許容度</label>
-            <select id="riskSelect" class="input">
-              <option value="低（安定重視）">低（安定重視）</option>
-              <option value="中（バランス型）">中（バランス型）</option>
-              <option value="高（積極運用）">高（積極運用）</option>
-            </select>
-          </div>
-
-          <!-- 市場 -->
-          <div class="form-field">
-            <label class="form-label" for="marketSelect">市場</label>
-            <select id="marketSelect" class="input">
-              <option value="日本株（東証）">日本株（東証）</option>
-              <option value="米国株（NYSE・NASDAQ）">米国株（NYSE・NASDAQ）</option>
-              <option value="日本株・米国株の両方">両方</option>
-            </select>
-          </div>
-
-        </div>
-        <!-- 矛盾警告バナー -->
-        <div class="warning-banner" id="warningBanner" role="alert" aria-live="polite">
-          <span>⚠️</span>
-          <span id="warningBannerText"></span>
-        </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" id="screeningBtn" onclick="generateScreeningPrompts()">
-            スクリーニングプロンプトを生成する
-          </button>
-        </div>
-      </div>
-
-      <!-- Output Section: 銘柄を探す -->
-      <div class="output-section" id="screeningOutputSection">
-
-        <div class="output-header">
-          <h2 class="output-title">スクリーニングプロンプト（3種類）</h2>
-          <span class="output-meta" id="screeningOutputMeta"></span>
-        </div>
-
-        <div class="prompt-grid single-col" id="screeningPromptGrid"></div>
-
-        <div class="crosssell-banner" onclick="switchTab('analyze')" role="button" tabindex="0" aria-label="銘柄を分析するタブに切り替え">
-          <span>💡</span>
-          <span>気になる銘柄が見つかったら <a onclick="event.stopPropagation(); switchTab('analyze')">「銘柄を分析する」タブ</a> で詳しく分析してみよう</span>
-        </div>
-
-      </div>
-
-    </div>
-
-    <!-- ============ Tab: 銘柄を分析する ============ -->
-    <div class="tab-panel" id="panel-analyze" role="tabpanel" aria-labelledby="tab-analyze">
-
-      <!-- Input Form -->
-      <div class="card form-card">
-        <h2 class="form-card-title">銘柄情報を入力</h2>
-        <div class="form-grid">
-          <div class="form-field form-field-ticker">
-            <label class="form-label" for="tickerInput">銘柄名・ティッカー<span>例: トヨタ自動車 / 7203</span></label>
-            <input
-              type="text"
-              id="tickerInput"
-              class="input"
-              placeholder="例: トヨタ自動車 / 7203"
-              autocomplete="off"
-            >
-          </div>
-          <div class="form-field">
-            <label class="form-label" for="periodSelect">分析期間</label>
-            <select id="periodSelect" class="input">
-              <option value="短期（1週間〜1ヶ月）">短期（1週間〜1ヶ月）</option>
-              <option value="中期（1〜6ヶ月）">中期（1〜6ヶ月）</option>
-              <option value="長期（6ヶ月以上）">長期（6ヶ月以上）</option>
-            </select>
-          </div>
-          <div class="form-field">
-            <label class="form-label" for="analyzeStyleSelect">投資スタイル</label>
-            <select id="analyzeStyleSelect" class="input">
-              <option value="デイトレード">デイトレード</option>
-              <option value="スイング">スイング</option>
-              <option value="長期投資">長期投資</option>
-            </select>
+          <div class="gf-guide-item">
+            <span class="gf-guide-item-icon">🎲</span>
+            <div class="gf-guide-item-title">予測市場データ活用</div>
+            <div class="gf-guide-item-desc">
+              Kalshi・Polymarketの確率データをプロンプトに追記すると、シナリオ分析の精度がさらに上がります。
+            </div>
           </div>
         </div>
-        <div class="form-actions">
-          <button class="btn btn-primary" id="generateBtn" onclick="generatePrompts()">
-            プロンプトを生成する
-          </button>
-        </div>
-      </div>
-
-      <!-- Output Section: 銘柄を分析する -->
-      <div class="output-section" id="outputSection">
-
-        <div class="output-header">
-          <h2 class="output-title">生成されたプロンプト（6種類）</h2>
-          <span class="output-meta" id="outputMeta"></span>
-        </div>
-
-        <div class="prompt-grid" id="promptGrid"></div>
-
-        <div class="notice">
-          <span class="notice-icon">&#9432;</span>
-          <span>上記のプロンプトをコピーして、Claudeのチャット画面に貼り付けてお使いください。より精度の高い分析には、最新の決算資料や株価データを合わせて添付することをおすすめします。</span>
-        </div>
-
       </div>
 
     </div>
 
   </main>
 
+  <!-- Note CTA -->
+  <div class="note-cta">
+    <p>このツールを作った人の記事を読む</p>
+    <a href="https://note.com/techio_note" target="_blank" rel="noopener">noteで読む &rarr;</a>
+  </div>
+
   <!-- Footer -->
   <footer>
-    <p>Powered by チームてちお</p>
+    <p>Powered by チームてちお &nbsp;|&nbsp; <a href="https://note.com/techio_note" style="color:var(--color-primary); text-decoration:none;">note</a></p>
   </footer>
 
   <script>
-    /* ========== Tab ========== */
-    function switchTab(tabId) {
-      // ボタン更新
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-        btn.setAttribute('aria-selected', 'false');
-      });
-      document.getElementById('tab-' + tabId).classList.add('active');
-      document.getElementById('tab-' + tabId).setAttribute('aria-selected', 'true');
+    /* ============================================================
+       STATE
+    ============================================================ */
+    let currentMarket = 'JP';
+    let selectedAnalyst = 0;
+    let currentPhase = 'before';
+    let currentScenario = 'none';
 
-      // パネル更新
-      document.querySelectorAll('.tab-panel').forEach(panel => {
-        panel.classList.remove('active');
-      });
-      document.getElementById('panel-' + tabId).classList.add('active');
-    }
-
-    /* ========== Radio style update ========== */
-    function updateRadioStyles(groupId) {
-      const group = document.getElementById(groupId);
-      group.querySelectorAll('.radio-label').forEach(label => {
-        const radio = label.querySelector('input[type="radio"]');
-        if (radio && radio.checked) {
-          label.classList.add('checked');
-        } else {
-          label.classList.remove('checked');
-        }
-      });
-    }
-
-    /* ========== 銘柄を探す ========== */
-    const SCREENING_TEMPLATES = [
+    /* ============================================================
+       ANALYST DEFINITIONS
+    ============================================================ */
+    const ANALYSTS = [
       {
-        title: "銘柄スクリーニング",
-        template: (style, sector, cap, risk, market) =>
-          `${market}の${sector}セクターから、${style}に適した${cap}の銘柄を5つスクリーニングしてください。選定基準（売上成長率・PER・RSI・出来高変化など）と各銘柄の選定理由を簡潔に添えてください。リスク許容度は${risk}です。`
+        id: 'shikiho',
+        icon: '🏭',
+        name: '四季報元編集長',
+        role: '中小型株・カタリスト特定',
+        tag: '日本株向き',
+        promptCore: (ticker, market) =>
+          `あなたは四季報編集長を30年務めた日本株の専門家です。中小型株の発掘と「カタリスト（株価変動の引き金となるイベント）」の特定に圧倒的な強みを持っています。`,
+        promptQuestion: (ticker, market, phase, phaseNote) =>
+          `${ticker}（${market === 'JP' ? '日本株' : '米国株'}）について、以下の観点で分析してください。${phaseNote}
+
+1. **カタリスト特定**: 今後6〜12ヶ月で株価上昇の引き金となり得る具体的なイベント・材料を3〜5個列挙してください
+2. **需給分析**: 四季報データ（業績・株主構成・信用倍率）から見た需給バランスを評価してください
+3. **四季報との乖離**: 市場コンセンサス予想と実際の業績の乖離リスク・機会を分析してください
+4. **投資判断**: 買い推奨 / ホールド / 見送り、その根拠と具体的な目標株価レンジを示してください
+
+※ 思考プロセスをステップバイステップで説明してください。`
       },
       {
-        title: "今週の注目銘柄",
-        template: (style, sector, cap, risk, market) =>
-          `${market}の${sector}セクターで今週注目すべき銘柄を3〜5つ挙げてください。直近のニュース・決算・テクニカル的な注目ポイントを含めて説明してください。${style}の視点で評価してください。`
+        id: 'gs_jp',
+        icon: '💼',
+        name: 'Goldman Sachs 日本株',
+        role: '為替感応度・ガバナンス評価',
+        tag: '日本株向き',
+        promptCore: (ticker, market) =>
+          `あなたはGoldman Sachs証券の日本株ストラテジストです。外資系機関投資家の視点から、為替感応度・コーポレートガバナンス評価・外国人投資家の買い余地を重視した分析を得意としています。`,
+        promptQuestion: (ticker, market, phase, phaseNote) =>
+          `${ticker}（${market === 'JP' ? '日本株' : '米国株'}）について、以下のフレームワークで分析してください。${phaseNote}
+
+1. **為替感応度**: 円高・円安それぞれのシナリオで業績・株価にどの程度の影響が出るか（1円あたりの営業利益影響額の推定）
+2. **コーポレートガバナンス**: ROE向上施策・自社株買い・配当政策・資本効率の改善度合いを評価してください
+3. **外国人投資家の余地**: 外国人持ち株比率の水準と、買い増し余地・売却リスクを分析してください
+4. **トップダウン視点**: 日経平均・セクターローテーションの文脈でのポジショニングを示してください
+5. **レーティング**: Buy / Neutral / Sell、6ヶ月・12ヶ月の目標株価を提示してください`
       },
       {
-        title: "比較・ランキング",
-        template: (style, sector, cap, risk, market) =>
-          `${market}の${sector}セクターの${cap}銘柄を、${style}の観点で比較ランキングしてください。上位5銘柄について、強み・弱み・現在の投資妙味を表形式でまとめてください。`
+        id: 'gs_us',
+        icon: '🌏',
+        name: 'Goldman Sachs 米国株',
+        role: 'スクリーニング・P/E比率',
+        tag: '米国株向き',
+        promptCore: (ticker, market) =>
+          `あなたはGoldman Sachsのシニアエクイティアナリストです。S&P500銘柄のスクリーニングとバリュエーション評価を専門とし、P/E比率・PEGレシオ・DCF分析を組み合わせた厳密な定量分析を行います。`,
+        promptQuestion: (ticker, market, phase, phaseNote) =>
+          `${ticker}について、Goldman Sachs流のエクイティリサーチフレームワークで分析してください。${phaseNote}
+
+1. **バリュエーション**: P/E・Forward P/E・PEG・EV/EBITDA・DCFの5指標で割安・割高を判定してください
+2. **クオリティスクリーニング**: ROE・ROA・フリーキャッシュフローマージン・負債比率でクオリティスコアを算出してください
+3. **成長性評価**: 売上高・EPS成長率の3年・5年トレンドと今後の見通しを分析してください
+4. **リスク格付け**: 市場リスク（ベータ値）・固有リスク・マクロリスクに分けてリスクスコアを提示してください
+5. **投資判断**: Buy / Neutral / Sell、12ヶ月の目標株価（ベース / 強気 / 弱気）を示してください`
+      },
+      {
+        id: 'ms',
+        icon: '📊',
+        name: 'Morgan Stanley',
+        role: 'テクニカル分析・エントリー/エグジット',
+        tag: '汎用',
+        promptCore: (ticker, market) =>
+          `あなたはMorgan Stanleyのテクニカルストラテジストです。チャートパターン・移動平均・RSI・ボリンジャーバンドを用いたテクニカル分析と、ファンダメンタルズを組み合わせた「テクノ・ファンダ統合分析」を専門とします。`,
+        promptQuestion: (ticker, market, phase, phaseNote) =>
+          `${ticker}について、テクニカル分析とファンダメンタルズを統合した分析を行ってください。${phaseNote}
+
+1. **チャート分析**: 現在の株価トレンド（上昇・下落・横ばい）、主要サポート・レジスタンスライン、チャートパターンを分析してください
+2. **移動平均**: 50日・200日移動平均との位置関係、ゴールデン/デッドクロスの可能性を評価してください
+3. **モメンタム**: RSI・MACD・出来高の観点からモメンタムの強弱を判定してください
+4. **エントリー/エグジット戦略**: 具体的なエントリー価格帯・利益確定ライン・損切りラインを提示してください
+5. **リスク・リワード比**: R/R比を計算し、トレードの合理性を評価してください`
+      },
+      {
+        id: 'blackrock',
+        icon: '🌐',
+        name: 'BlackRock',
+        role: 'マクロ適合性・セクターローテーション',
+        tag: '長期投資向き',
+        promptCore: (ticker, market) =>
+          `あなたはBlackRockのグローバルチーフストラテジストです。マクロ経済環境・セクターローテーション・ESG要素を考慮した長期的な資産配分の視点から分析を行います。`,
+        promptQuestion: (ticker, market, phase, phaseNote) =>
+          `${ticker}について、BlackRock流のマクロ・マルチファクター分析を行ってください。${phaseNote}
+
+1. **マクロ適合性**: 現在の金利環境・インフレ・景気サイクルにおいて、この銘柄は有利なポジションにあるか評価してください
+2. **セクターローテーション**: 現フェーズ（拡張 / 減速 / 後退 / 回復）でこのセクター・銘柄が有利かどうかを分析してください
+3. **ファクター分析**: バリュー・グロース・クオリティ・モメンタム・ディフェンシブの5ファクターで評価してください
+4. **ESG・長期リスク**: 気候変動・テクノロジー変革・規制リスクへの対応状況を評価してください
+5. **ポートフォリオ組み入れ提案**: 長期分散ポートフォリオでの適正ウェイトと組み入れ根拠を示してください`
+      },
+      {
+        id: 'scenario',
+        icon: '🎲',
+        name: 'シナリオシミュレーター',
+        role: '3シナリオ定量予測',
+        tag: '不確実性分析',
+        promptCore: (ticker, market) =>
+          `あなたはクオンツアナリストです。モンテカルロシミュレーション・シナリオ分析・確率的モデリングを駆使して、複数の将来シナリオにおける株価分布を定量的に推計します。`,
+        promptQuestion: (ticker, market, phase, phaseNote) =>
+          `${ticker}について、3つのシナリオで株価を定量的にシミュレーションしてください。${phaseNote}
+
+**シナリオ分析（12ヶ月後）**
+
+【強気シナリオ（確率: 推定〇〇%）】
+- 実現条件（具体的なKPI達成基準）
+- 想定株価レンジ
+- 最大上値余地
+
+【中立シナリオ（確率: 推定〇〇%）】
+- 前提条件
+- 想定株価レンジ
+- コンセンサス予想との乖離
+
+【弱気シナリオ（確率: 推定〇〇%）】
+- トリガーとなるリスク要因
+- 想定株価レンジ
+- 最大下落リスク
+
+さらに、各シナリオの確率加重平均を使って「フェアバリュー」を算出し、現在株価との比較を行ってください。`
+      },
+      {
+        id: 'dividend',
+        icon: '💰',
+        name: '配当型マネージャー',
+        role: '配当持続性・優待廃止リスク',
+        tag: 'インカム投資向き',
+        promptCore: (ticker, market) =>
+          `あなたはバイ&ホールド30年のベテラン配当投資家です。配当の持続可能性・増配ポテンシャル・優待制度のリスクを徹底的に分析し、長期のインカムゲインを最大化する投資判断を行います。`,
+        promptQuestion: (ticker, market, phase, phaseNote) =>
+          `${ticker}について、配当・インカム投資の視点で分析してください。${phaseNote}
+
+1. **配当の持続可能性**: 配当性向・フリーキャッシュフローカバー率・過去10年の配当実績から、現在の配当が継続・増配・減配どのシナリオになるか評価してください
+2. **優待制度リスク**: 株主優待制度がある場合、廃止・縮小リスクを過去事例と業績から分析してください
+3. **下値支持線**: 配当利回りの観点から株価の下値支持線（利回り〇%水準での株価）を算出してください
+4. **10年後の配当試算**: 増配率〇%と仮定した場合の10年後の配当利回り（取得原価ベース）を試算してください
+5. **インカム投資家への推奨**: 長期保有・配当再投資戦略での保有価値を総合評価してください`
       }
     ];
 
-    function generateScreeningPrompts() {
-      const style = document.querySelector('input[name="investStyle"]:checked').value;
-      const sector = document.getElementById('sectorSelect').value;
-      const cap = document.getElementById('capSelect').value;
-      const risk = document.getElementById('riskSelect').value;
-      const market = document.getElementById('marketSelect').value;
+    /* ============================================================
+       PHASE DEFINITIONS
+    ============================================================ */
+    const PHASES = {
+      before: {
+        label: '決算前',
+        desc: '決算発表前の予測・事前分析に最適なプロンプトが生成されます。',
+        note: '\n\n【決算前フェーズ】次回決算発表前の分析として、業績予想・サプライズリスク・事前ポジショニングの観点を必ず含めてください。'
+      },
+      during: {
+        label: '決算中・速報',
+        desc: '決算発表直後・速報段階の即時分析に最適なプロンプトが生成されます。',
+        note: '\n\n【決算中フェーズ】決算速報を受けての即時分析として、業績サプライズ（上振れ・下振れ）の大きさ・翌日の株価反応予測・短期的なポジション変更の判断を含めてください。'
+      },
+      after: {
+        label: '決算後',
+        desc: '決算内容を踏まえた次期戦略・中長期見通し分析に最適なプロンプトが生成されます。',
+        note: '\n\n【決算後フェーズ】発表された決算内容を踏まえた分析として、ガイダンスとの比較・修正予想の妥当性評価・中長期の業績トレンド変化を中心に分析してください。'
+      },
+      none: {
+        label: '指定なし',
+        desc: '決算フェーズに縛られない汎用的なプロンプトが生成されます。',
+        note: ''
+      }
+    };
 
-      const outputSection = document.getElementById('screeningOutputSection');
-      const promptGrid = document.getElementById('screeningPromptGrid');
-      const outputMeta = document.getElementById('screeningOutputMeta');
+    /* ============================================================
+       SCENARIO DEFINITIONS
+    ============================================================ */
+    const SCENARIOS = {
+      none: null,
+      yenhigh: {
+        label: '円高進行',
+        icon: '💴',
+        prompt: (ticker, market) =>
+          `あなたは為替・マクロ専門のクオンツアナリストです。
 
-      outputMeta.textContent = `${style} / ${sector} / ${market}`;
+${ticker}（${market === 'JP' ? '日本株' : '米国株'}）について、**円高進行シナリオ**（1ドル=130円〜120円台）が実現した場合の影響を以下の観点で定量的に分析してください。
 
-      promptGrid.innerHTML = '';
+1. **業績への直接影響**: 円高1円あたりの売上・営業利益への影響額を推定してください（輸出企業の場合は為替感応度を算出）
+2. **株価への影響**: 過去の円高局面（2011年・2022年後半等）での類似銘柄の株価反応を参照し、下落・上昇の幅を推定してください
+3. **円高メリット・デメリット**: この銘柄固有の円高恩恵（輸入コスト低下等）・不利益（輸出減収等）を整理してください
+4. **投資戦略**: 円高進行中・進行後それぞれの局面での最適な投資行動を提案してください`
+      },
+      yenlow: {
+        label: '円安継続',
+        icon: '💵',
+        prompt: (ticker, market) =>
+          `あなたは為替・マクロ専門のクオンツアナリストです。
 
-      SCREENING_TEMPLATES.forEach((item, index) => {
-        const text = item.template(style, sector, cap, risk, market);
-        const card = createPromptCard(index + 1, item.title, text);
-        promptGrid.appendChild(card);
+${ticker}（${market === 'JP' ? '日本株' : '米国株'}）について、**円安継続シナリオ**（1ドル=155円〜170円台）が続く場合の影響を分析してください。
+
+1. **業績への直接影響**: 円安1円あたりの売上・営業利益への影響額を推定してください
+2. **円安メリット企業か確認**: この銘柄が円安恩恵を受ける企業か、逆に円安がコスト増になる企業か整理してください
+3. **日銀介入リスク**: 円安が加速した場合の日銀為替介入・利上げリスクが株価に与える影響を分析してください
+4. **投資戦略**: 円安継続環境での保有・増減の判断とリスク管理方法を提案してください`
+      },
+      ratehike: {
+        label: '利上げ局面',
+        icon: '📈',
+        prompt: (ticker, market) =>
+          `あなたは金利・マクロ専門のストラテジストです。
+
+${ticker}（${market === 'JP' ? '日本株' : '米国株'}）について、**利上げ局面**（日銀の段階的利上げ or FRBの高金利維持）での影響を分析してください。
+
+1. **金利感応度**: 金利上昇がこの銘柄のバリュエーション（特にPER・DCFの割引率）に与える影響を定量的に示してください
+2. **財務構造リスク**: 有利子負債比率・固定金利 vs 変動金利の比率から、金利上昇によるコスト増の規模を推定してください
+3. **相対的な魅力の変化**: 金利上昇で無リスク資産（国債等）の利回りが上がった場合、この銘柄への資金流入・流出の傾向を分析してください
+4. **投資戦略**: 利上げ局面での保有比率の調整・ヘッジ方法を提案してください`
+      },
+      political: {
+        label: '政局不安',
+        icon: '🗳️',
+        prompt: (ticker, market) =>
+          `あなたは地政学・政策リスク専門のアナリストです。
+
+${ticker}（${market === 'JP' ? '日本株' : '米国株'}）について、**政局不安シナリオ**（選挙・政権交代・規制変更リスク）での影響を分析してください。
+
+1. **政策依存度の評価**: この銘柄・業界が政府補助金・規制・政策変更にどの程度依存しているかを評価してください
+2. **政局不安時の過去実績**: 過去の政局不安時（政権交代・選挙前後等）にこの銘柄・セクターがどう反応したか分析してください
+3. **規制変更リスク**: 政権交代・政策転換で強化される可能性がある規制・弱まる規制を識別し、影響を評価してください
+4. **投資戦略**: 政局不安時のリスク管理と、政策変更後の回復シナリオを提案してください`
+      },
+      recession: {
+        label: '景気後退',
+        icon: '📉',
+        prompt: (ticker, market) =>
+          `あなたは景気循環・クレジット専門のアナリストです。
+
+${ticker}（${market === 'JP' ? '日本株' : '米国株'}）について、**景気後退シナリオ**（GDP成長率マイナス・失業率上昇・企業業績悪化）での耐性を分析してください。
+
+1. **景気敏感度**: この銘柄は景気循環型（シクリカル）か、ディフェンシブか、グロースかを判定し、景気後退での業績悪化幅を推定してください
+2. **財務健全性**: 不況時でも耐えられる財務体力（手元現金・有利子負債・自己資本比率）を評価してください
+3. **過去の不況時実績**: リーマンショック・コロナショック等での株価下落幅・回復までの期間を分析してください
+4. **投資戦略**: 景気後退入り前・最中・回復初期それぞれの局面での最適な投資行動を提案してください`
+      }
+    };
+
+    /* ============================================================
+       MARKET EXAMPLES
+    ============================================================ */
+    const EXAMPLES = {
+      JP: [
+        { label: 'トヨタ (7203)', value: 'トヨタ自動車 (7203)' },
+        { label: '任天堂 (7974)', value: '任天堂 (7974)' },
+        { label: 'ソニー (6758)', value: 'ソニーグループ (6758)' },
+        { label: '三菱UFJ (8306)', value: '三菱UFJフィナンシャル・グループ (8306)' },
+        { label: 'ソフトバンクG (9984)', value: 'ソフトバンクグループ (9984)' },
+      ],
+      US: [
+        { label: 'NVDA (エヌビディア)', value: 'NVIDIA (NVDA)' },
+        { label: 'AAPL (Apple)', value: 'Apple (AAPL)' },
+        { label: 'TSLA (テスラ)', value: 'Tesla (TSLA)' },
+        { label: 'MSFT (マイクロソフト)', value: 'Microsoft (MSFT)' },
+        { label: 'AMZN (アマゾン)', value: 'Amazon (AMZN)' },
+      ]
+    };
+
+    /* ============================================================
+       INIT
+    ============================================================ */
+    document.addEventListener('DOMContentLoaded', () => {
+      renderAnalystGrid();
+      renderTickerExamples();
+      updatePhaseDesc();
+
+      document.getElementById('tickerInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') generatePrompts();
       });
+    });
 
-      outputSection.classList.add('visible');
-
-      setTimeout(() => {
-        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 50);
+    /* ============================================================
+       MARKET TOGGLE
+    ============================================================ */
+    function setMarket(market) {
+      currentMarket = market;
+      document.getElementById('btnJP').classList.toggle('active', market === 'JP');
+      document.getElementById('btnUS').classList.toggle('active', market === 'US');
+      renderTickerExamples();
     }
 
-    /* ========== 銘柄を分析する ========== */
-    const PROMPT_TEMPLATES = [
-      {
-        title: "市場分析プロンプト",
-        template: (ticker, period, style) =>
-          `${ticker}の今日の市場を分析し、5つの高確率トレード機会を特定してください。エントリー価格・利益目標・ストップロス・リスクリワード比を提示してください。分析期間は${period}、投資スタイルは${style}を前提としてください。`
-      },
-      {
-        title: "売買シグナルプロンプト",
-        template: (ticker, period, style) =>
-          `${ticker}を日足・週足の両時間軸で評価してください。サポート・レジスタンス・移動平均・モメンタムを特定し、買い/ホールド/売りシグナルを提供してください。${style}視点で、${period}の見通しも添えてください。`
-      },
-      {
-        title: "ニュース分析プロンプト",
-        template: (ticker, period, style) =>
-          `${ticker}に関する最新ニュースを要約し、実行可能なトレード洞察に変換してください。短期・長期の影響と価格変動範囲を概説してください。${style}を行う${period}の観点でまとめてください。`
-      },
-      {
-        title: "バックテストプロンプト",
-        template: (ticker, period, style) =>
-          `${ticker}の過去${period}の取引戦略（MAクロスオーバー・RSIダイバージェンス等）をバックテストしてください。勝率・利益率・最大ドローダウンを報告してください。${style}に最適なパラメーター設定も提案してください。`
-      },
-      {
-        title: "ポートフォリオ管理プロンプト",
-        template: (ticker, period, style) =>
-          `${ticker}を含むポートフォリオを評価してください。過剰露出・弱いポジション・隠れた相関を特定し、20%下落に耐えるリバランス戦略を推奨してください。${style}の${period}運用を前提としてください。`
-      },
-      {
-        title: "トレード改善プロンプト",
-        template: (ticker, period, style) =>
-          `${ticker}を対象にした過去20回のトレードを分析してください。繰り返すエラー・見逃した機会・行動バイアスを特定し、3つのパーソナライズされたルールを提案してください。${style}・${period}での改善に絞ってください。`
-      }
-    ];
+    function renderTickerExamples() {
+      const wrap = document.getElementById('tickerExamples');
+      wrap.innerHTML = '';
+      EXAMPLES[currentMarket].forEach(ex => {
+        const chip = document.createElement('button');
+        chip.className = 'ticker-chip';
+        chip.textContent = ex.label;
+        chip.onclick = () => {
+          document.getElementById('tickerInput').value = ex.value;
+        };
+        wrap.appendChild(chip);
+      });
+    }
 
-    const PLACEHOLDER = "【銘柄名を入力してください】";
+    /* ============================================================
+       ANALYST GRID
+    ============================================================ */
+    function renderAnalystGrid() {
+      const grid = document.getElementById('analystGrid');
+      grid.innerHTML = '';
+      ANALYSTS.forEach((a, i) => {
+        const card = document.createElement('div');
+        card.className = 'analyst-card' + (i === selectedAnalyst ? ' selected' : '');
+        card.setAttribute('role', 'button');
+        card.setAttribute('tabindex', '0');
+        card.setAttribute('aria-label', a.name);
+        card.innerHTML = `
+          <span class="analyst-card-icon">${a.icon}</span>
+          <div class="analyst-card-name">${a.name}</div>
+          <div class="analyst-card-role">${a.role}</div>
+          <div style="margin-top:6px;">
+            <span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:100px; background:rgba(108,99,255,0.1); color:var(--color-primary);">${a.tag}</span>
+          </div>
+          <div class="analyst-card-check">✓</div>
+        `;
+        card.onclick = () => selectAnalyst(i);
+        card.onkeydown = (e) => { if (e.key === 'Enter' || e.key === ' ') selectAnalyst(i); };
+        grid.appendChild(card);
+      });
+    }
 
+    function selectAnalyst(index) {
+      selectedAnalyst = index;
+      document.querySelectorAll('.analyst-card').forEach((el, i) => {
+        el.classList.toggle('selected', i === index);
+      });
+    }
+
+    /* ============================================================
+       PHASE
+    ============================================================ */
+    function setPhase(phase) {
+      currentPhase = phase;
+      ['before', 'during', 'after', 'none'].forEach(p => {
+        document.getElementById('phase-' + p).classList.toggle('active', p === phase);
+      });
+      updatePhaseDesc();
+    }
+
+    function updatePhaseDesc() {
+      document.getElementById('phaseDesc').textContent = PHASES[currentPhase].desc;
+    }
+
+    /* ============================================================
+       SCENARIO
+    ============================================================ */
+    function setScenario(scenario) {
+      currentScenario = scenario;
+      ['none', 'yenhigh', 'yenlow', 'ratehike', 'political', 'recession'].forEach(s => {
+        const el = document.getElementById('scenario-' + s);
+        if (el) el.classList.toggle('active', s === scenario);
+      });
+    }
+
+    /* ============================================================
+       GENERATE
+    ============================================================ */
     function generatePrompts() {
-      const rawTicker = document.getElementById('tickerInput').value.trim();
-      const period = document.getElementById('periodSelect').value;
-      const style = document.getElementById('analyzeStyleSelect').value;
+      const ticker = document.getElementById('tickerInput').value.trim();
+      if (!ticker) {
+        document.getElementById('tickerInput').focus();
+        document.getElementById('tickerInput').style.borderColor = 'var(--color-error)';
+        setTimeout(() => {
+          document.getElementById('tickerInput').style.borderColor = '';
+        }, 1500);
+        return;
+      }
 
-      const ticker = rawTicker || PLACEHOLDER;
+      const analyst = ANALYSTS[selectedAnalyst];
+      const phase = PHASES[currentPhase];
+      const phaseNote = phase.note;
 
-      const outputSection = document.getElementById('outputSection');
-      const promptGrid = document.getElementById('promptGrid');
-      const outputMeta = document.getElementById('outputMeta');
+      // Build main prompts (3 prompts per analyst)
+      const mainPrompts = buildMainPrompts(ticker, analyst, phase, phaseNote);
 
-      outputMeta.textContent = rawTicker
-        ? `銘柄: ${rawTicker} ／ ${period} ／ ${style}`
-        : `${period} ／ ${style}`;
+      // Build scenario prompt if selected
+      const scenarioDef = SCENARIOS[currentScenario];
 
-      promptGrid.innerHTML = '';
+      // Render
+      renderResult(ticker, analyst, mainPrompts, scenarioDef);
+    }
 
-      PROMPT_TEMPLATES.forEach((item, index) => {
-        const text = item.template(ticker, period, style);
-        const card = createPromptCard(index + 1, item.title, text);
-        promptGrid.appendChild(card);
+    /* ============================================================
+       BUILD PROMPTS
+    ============================================================ */
+    function buildMainPrompts(ticker, analyst, phase, phaseNote) {
+      const core = analyst.promptCore(ticker, currentMarket);
+      const main = analyst.promptQuestion(ticker, currentMarket, currentPhase, phaseNote);
+
+      const prompt1 = `${core}
+
+${main}`;
+
+      const prompt2 = buildDeepDivePrompt(ticker, analyst, phaseNote);
+      const prompt3 = buildGoogleFinancePrompt(ticker, analyst, phaseNote);
+
+      return [
+        { title: `${analyst.name}視点の総合分析`, text: prompt1 },
+        { title: `${analyst.name}流 深掘り質問リスト`, text: prompt2 },
+        { title: 'Google Finance Deep Research用プロンプト', text: prompt3 },
+      ];
+    }
+
+    function buildDeepDivePrompt(ticker, analyst, phaseNote) {
+      return `あなたは${analyst.name}（${analyst.role}）の役割で${ticker}を分析しています。${phaseNote}
+
+以下の質問リストに順番に答えてください。各質問への回答後、「次の観点で考えると...」と自己フィードバックを行い、分析を深めてください。
+
+Q1: ${ticker}の現在の最大の強みと最大のリスクは何ですか？
+Q2: 競合他社と比べて、${ticker}が優位な点・劣っている点を3つずつ挙げてください。
+Q3: もし今から1,000万円をこの銘柄に投資するなら、どのタイミング・価格帯で買いますか？
+Q4: この銘柄を「絶対に買わない」と判断する条件（売りシグナル）を3つ挙げてください。
+Q5: ${analyst.name}として、この銘柄について市場が見落としている「隠れた価値」や「見えていないリスク」があれば教えてください。
+
+最後に、上記の回答を踏まえた総合的な投資判断（買い/ホールド/売り）と、確信度（0〜100%）を示してください。`;
+    }
+
+    function buildGoogleFinancePrompt(ticker, analyst, phaseNote) {
+      return `以下のプロンプトをGoogle FinanceのDeep Research機能に入力してください。
+Geminiが数百の情報ソースを横断して回答します。
+
+---
+
+${ticker}について、以下の点をWeb上の最新情報をもとに調査・分析してください。${phaseNote}
+
+【調査項目】
+1. 最新の決算内容（直近2〜3期の売上・利益トレンド）
+2. 主要アナリストの最新レーティングと目標株価
+3. 機関投資家・大口の持ち株変動（最新の13Fや大量保有報告書）
+4. 直近6ヶ月の重要ニュース・IRリリース・プレスリリース
+5. 競合他社の動向と業界トレンド
+
+【分析依頼】
+上記の調査結果をもとに、${analyst.name}（${analyst.role}）の視点から投資判断を行ってください。
+特に「市場が過小評価 / 過大評価している点」があれば明確に指摘してください。
+
+出力形式:
+- サマリー（3行以内）
+- 強気の根拠（箇条書き）
+- 弱気のリスク（箇条書き）
+- 最終判断（買い/中立/売り）と目標株価レンジ`;
+    }
+
+    /* ============================================================
+       RENDER RESULT
+    ============================================================ */
+    function renderResult(ticker, analyst, prompts, scenarioDef) {
+      // Update meta
+      document.getElementById('resultTitle').textContent = `生成されたプロンプト — ${ticker}`;
+      document.getElementById('resultMeta').textContent =
+        `${analyst.name} / ${PHASES[currentPhase].label}${currentScenario !== 'none' ? ' / ' + SCENARIOS[currentScenario].label : ''}`;
+
+      // Main prompts
+      const mainGrid = document.getElementById('mainPromptGrid');
+      mainGrid.innerHTML = '';
+      prompts.forEach((p, i) => {
+        mainGrid.appendChild(createPromptCard(i + 1, p.title, p.text, i === 2));
       });
 
-      outputSection.classList.add('visible');
+      // Scenario prompt
+      const scenarioWrap = document.getElementById('scenarioPromptWrap');
+      const scenarioGrid = document.getElementById('scenarioPromptGrid');
+      scenarioGrid.innerHTML = '';
 
+      if (scenarioDef) {
+        const scenarioText = scenarioDef.prompt(ticker, currentMarket);
+        scenarioGrid.appendChild(createPromptCard(1, `${scenarioDef.icon} ${scenarioDef.label}シナリオ分析`, scenarioText, true));
+        scenarioWrap.style.display = 'block';
+      } else {
+        scenarioWrap.style.display = 'none';
+      }
+
+      // Show result
+      const resultSection = document.getElementById('resultSection');
+      resultSection.classList.add('visible');
       setTimeout(() => {
-        outputSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 50);
     }
 
-    /* ========== Shared: createPromptCard ========== */
-    function createPromptCard(number, title, text) {
+    function createPromptCard(number, title, text, fullWidth) {
       const card = document.createElement('div');
-      card.className = 'prompt-card';
+      card.className = 'prompt-card' + (fullWidth ? ' prompt-card-full' : '');
 
       const header = document.createElement('div');
       header.className = 'prompt-card-header';
@@ -1048,7 +1523,7 @@
       textarea.className = 'prompt-textarea';
       textarea.value = text;
       textarea.readOnly = true;
-      textarea.setAttribute('aria-label', title + 'のプロンプトテキスト');
+      textarea.setAttribute('aria-label', title + 'のプロンプト');
 
       const footer = document.createElement('div');
       footer.className = 'prompt-card-footer';
@@ -1068,7 +1543,9 @@
       return card;
     }
 
-    /* ========== Shared: copyToClipboard ========== */
+    /* ============================================================
+       COPY TO CLIPBOARD
+    ============================================================ */
     function copyToClipboard(text, btn) {
       navigator.clipboard.writeText(text)
         .then(() => {
@@ -1080,11 +1557,11 @@
           }, 2000);
         })
         .catch(() => {
+          // フォールバック
           try {
             const el = document.createElement('textarea');
             el.value = text;
-            el.style.position = 'fixed';
-            el.style.opacity = '0';
+            el.style.cssText = 'position:fixed;opacity:0;pointer-events:none;';
             document.body.appendChild(el);
             el.focus();
             el.select();
@@ -1098,126 +1575,11 @@
             }, 2000);
           } catch (err) {
             btn.textContent = 'コピー失敗';
-            setTimeout(() => {
-              btn.textContent = 'コピー';
-            }, 2000);
+            setTimeout(() => { btn.textContent = 'コピー'; }, 2000);
           }
         });
     }
-
-    /* ========== 警告バナー判定 ========== */
-    const WARNING_PATTERNS = [
-      {
-        style: 'グロース投資（成長株）',
-        risk: '低（安定重視）',
-        message: 'グロース株はボラティリティが高く、リスク低とは相性が悪い傾向があります。安定重視なら「高配当投資」や「バリュー投資」も検討してみてください。'
-      },
-      {
-        style: 'スイングトレード',
-        risk: '低（安定重視）',
-        message: 'スイングトレードは短期売買のため価格変動リスクが高い手法です。安定重視の場合は長期投資スタイルが向いているかもしれません。'
-      }
-    ];
-
-    function checkWarning() {
-      const style = document.querySelector('input[name="investStyle"]:checked');
-      const risk = document.getElementById('riskSelect');
-      if (!style || !risk) return;
-
-      const styleVal = style.value;
-      const riskVal = risk.value;
-
-      const match = WARNING_PATTERNS.find(p => p.style === styleVal && p.risk === riskVal);
-      const banner = document.getElementById('warningBanner');
-      const bannerText = document.getElementById('warningBannerText');
-
-      if (match) {
-        bannerText.textContent = match.message;
-        banner.classList.add('show');
-      } else {
-        banner.classList.remove('show');
-      }
-    }
-
-    /* ========== セクター選択肢切り替え ========== */
-    const SECTOR_OPTIONS_JP = [
-      'セクター問わない',
-      'AI・半導体',
-      'EV・脱炭素・再エネ',
-      '内需・生活消費',
-      '金融・保険',
-      '医療・ヘルスケア',
-      '輸出・製造業',
-      '不動産・インフラ',
-      '食品・外食'
-    ];
-
-    const SECTOR_OPTIONS_US = [
-      'セクター問わない',
-      'テクノロジー（AI・クラウド・SaaS）',
-      '半導体・ハードウェア',
-      'ヘルスケア・バイオ',
-      '金融・フィンテック',
-      'エネルギー・脱炭素',
-      '一般消費財・EC',
-      '通信・メディア',
-      '公益・インフラ'
-    ];
-
-    function updateSectorOptions(market) {
-      const sectorSelect = document.getElementById('sectorSelect');
-      const options = market === '米国株（NYSE・NASDAQ）' ? SECTOR_OPTIONS_US : SECTOR_OPTIONS_JP;
-
-      const currentVal = sectorSelect.value;
-      sectorSelect.innerHTML = options.map(o => `<option value="${o}">${o}</option>`).join('');
-      // 同じ値があれば保持、なければ先頭に戻す
-      if (options.includes(currentVal)) {
-        sectorSelect.value = currentVal;
-      }
-    }
-
-    /* ========== Init ========== */
-    document.addEventListener('DOMContentLoaded', () => {
-      // Enterキーで分析プロンプト生成
-      document.getElementById('tickerInput').addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') generatePrompts();
-      });
-
-      // クロスセルバナーのキーボード操作
-      const crosssellBanner = document.querySelector('.crosssell-banner');
-      if (crosssellBanner) {
-        crosssellBanner.addEventListener('keydown', (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            switchTab('analyze');
-          }
-        });
-      }
-
-      // 警告バナー: 投資スタイルのラジオ変更時
-      document.querySelectorAll('input[name="investStyle"]').forEach(radio => {
-        radio.addEventListener('change', checkWarning);
-      });
-
-      // 警告バナー: リスク許容度変更時
-      document.getElementById('riskSelect').addEventListener('change', checkWarning);
-
-      // 市場セレクト変更時にセクター選択肢を切り替え
-      document.getElementById('marketSelect').addEventListener('change', (e) => {
-        updateSectorOptions(e.target.value);
-      });
-
-      // ページ読み込み時に一度実行
-      updateSectorOptions(document.getElementById('marketSelect').value);
-      checkWarning();
-    });
   </script>
-
-  <!-- note導線 -->
-  <div style="text-align:center; padding: 24px 16px; background: #f8f8f8; border-top: 1px solid #e0e0e0; margin-top: 40px;">
-    <p style="margin: 0 0 8px; font-size: 14px; color: #555;">このアプリを作った人の記事を読む</p>
-    <a href="https://note.com/techio_note" target="_blank" rel="noopener" style="display: inline-block; background: #6C63FF; color: white; text-decoration: none; padding: 10px 24px; border-radius: 24px; font-size: 14px; font-weight: bold;">noteで読む &rarr;</a>
-  </div>
 
 </body>
 </html>
